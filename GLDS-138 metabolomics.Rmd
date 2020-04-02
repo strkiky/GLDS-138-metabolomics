@@ -10,7 +10,394 @@ editor_options:
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
 ```
+```{r}
+#Set up
+rm(list = ls())
+library(ggplot2)
+library(RColorBrewer)
+library(gplots)
+library(ggbiplot)
+setwd("C:/Users/strki/Documents/2019-2020 summer break/NASA genelab/metabolomic")
 
+file_url <- "https://genelab-data.ndc.nasa.gov/genelab/static/media/dataset/GLDS-138_metabolomics_mx%20367428_NASA_bacteria%20cells_09-2017_submit%20.csv?version=1"
+BRIC23metab = 'GLDS-138_metabolomics_mx 367428_NASA_bacteria cells_09-2017_submit.csv'
+download.file(file_url, BRIC23metab)
+Bdata <- read.csv(BRIC23metab, stringsAsFactors = FALSE)
+
+# filtering data
+Bdata <- t(Bdata)
+Bdata <- Bdata[-c(2:7, 114:118),]
+Bdata <- Bdata[,-c(1:2,6:8)]
+Bdata[1,1:3] <- Bdata[2,1:3]
+Bdata <- Bdata[-c(2),]
+
+columnName <- Bdata[1,]
+rowName    <- Bdata[,1]
+colnames(Bdata) <- columnName
+rownames(Bdata) <- rowName
+Bdata <- Bdata[-1,]
+Bdata <- Bdata[,-1]
+Bdata <- as.data.frame(Bdata)
+
+Bdata[,3:ncol(Bdata)] <- lapply(Bdata[,3:ncol(Bdata)], function(x) as.numeric(as.character(x)))
+```
+```{r}
+# Row-wise correction
+BdataRWC <- as.data.frame(Bdata)
+rowi <- BdataRWC[,3:ncol(BdataRWC)]
+
+BdataRWC[,3:ncol(BdataRWC)] <- rowi / rowSums(rowi) # by the peak of all sums
+
+sum(BdataRWC[105,3:ncol(BdataRWC)]) # checking the row wise correction worked well
+
+# Baseline correction
+tail(BdataRWC[,1:5], 1)
+
+blc <- tail(BdataRWC,1)
+tail(blc[,1:5],1)
+BdataRWC1 <- BdataRWC[-nrow(BdataRWC),]
+BdataBLC <- BdataRWC1 # creating an intermediate step so no rows are accidentally deleted
+
+BdataBLC[,3:ncol(BdataBLC)] <- BdataBLC[,3:ncol(BdataBLC)] - blc[rep(1,104),3:ncol(blc)]
+
+# xylose <- BdataRWC1[1,3] - blc[,3] # double check that the values are correct
+# mb39 <- BdataRWC1[104,715] - blc[,715]
+
+utils::View(BdataBLC)
+
+Bsub.prenorm <- BdataBLC[1:52,]     # B.subtilis pre-normalisation
+Bsub.prenorm <- Bsub.prenorm[,-2]
+Bsub.prenorm$comment <- gsub("B. subtilis", "", Bsub.prenorm$comment)
+Saur.prenorm <- BdataBLC[53:104,]   # S. aureus  pre-normalisation
+Saur.prenorm <- Saur.prenorm[,-2]
+Saur.prenorm$comment <- gsub("S. aureus", "", Saur.prenorm$comment)
+Saur.prenorm$comment <- gsub("S. Aureus", "", Saur.prenorm$comment)
+
+# setting up the scales for normalisation
+
+autoscale <- function(a){
+  colmean <- apply(a,2,mean) # column mean
+  colsd <- apply(a, 2, sd) # col standard deviation
+  cv <- sweep(a, 2, colmean, "-") # minus mean center
+  cv <- sweep(cv, 2, colsd, "/") # divide by sd
+  return(cv)
+}
+
+rangescale <- function(r) {
+  apply(r, 2, function(x) (x  - mean(x))/(max(x) - min(x)))
+}
+
+paretoscale <- function(p){
+  colmean <- apply(p,2,mean) 
+  colsd <- apply(p, 2, sd) 
+  colsqrtsd <- sqrt(colsd)
+  cv <- sweep(p, 2, colmean, "-") 
+  cv <- sweep(cv, 2, colsqrtsd, "/") 
+  return(cv)
+}
+
+levelscale <- function(l){
+  colmean <- apply(l,2,mean)
+  cv <- sweep(l, 2, colmean, "-")
+  cv <- sweep(cv, 2, colmean, "/")
+  return(cv)
+}
+
+centerscale <- function(c){
+  colmean <- apply(l,2,mean)
+  cv <- sweep(l, 2, colmean, "-")
+  return(cv)
+}
+
+# normalise
+Bsub.autoscale <- Bsub.prenorm
+Bsub.autoscale[,2:ncol(Bsub.autoscale)] <- autoscale(Bsub.prenorm[,2:ncol(Bsub.prenorm)])
+
+Bsub.range <- Bsub.prenorm
+Bsub.range[,2:ncol(Bsub.range)] <- rangescale(Bsub.prenorm[,2:ncol(Bsub.prenorm)])
+
+Bsub.pareto <- Bsub.prenorm
+Bsub.pareto[,2:ncol(Bsub.pareto)] <- paretoscale(Bsub.prenorm[,2:ncol(Bsub.prenorm)])
+
+Bsub.level <- Bsub.prenorm
+Bsub.level[,2:ncol(Bsub.level)] <- levelscale(Bsub.prenorm[,2:ncol(Bsub.prenorm)])
+
+Bsub.centre <- Bsub.prenorm
+Bsub.centre[,2:ncol(Bsub.centre)] <- centrescale(Bsub.prenorm[,2:ncol(Bsub.prenorm)])
+```
+# Check on normality and assumptions
+```{r}
+# Check on normalisation
+boxplot(Bsub.prenorm[,2:ncol(Bsub.prenorm[1:200])], col = 2, range = 0, las =2)
+boxplot(log2(Bsub.prenorm[,2:ncol(Bsub.prenorm[1:200])]+1), col = 2, range = 0)
+boxplot(Bsub.autoscale[,2:ncol(Bsub.autoscale[1:200])], col =2, range = 0, las = 2)
+boxplot(Bsub.range[,2:ncol(Bsub.range[1:200])], col =2, range = 0, las = 2)
+boxplot(Bsub.pareto[,2:ncol(Bsub.pareto[1:200])], col =2, range = 0, las = 2)
+boxplot(Bsub.level[,2:ncol(Bsub.level[1:200])], col =2, range = 0, las = 2)
+boxplot(Bsub.centre[,2:ncol(Bsub.centre[1:200])], col =2, range = 0, las = 2)
+boxplot(Bsub.prenorm[,2:ncol(Bsub.prenorm[1:200])], col = 2, range = 0, center = TRUE)
+# autoscale seems most suitable
+
+plot(density(Bsub.prenorm[,2]),col=2)
+lines(density(Bsub.prenorm[,3]),col=3)
+
+plot(density(Bsub.autoscale[,2]),col=2) # density-plot
+lines(density(Bsub.autoscale[,3]),col=3)
+
+colramp = colorRampPalette(c(3,"white",2))(20)
+plot(density(Bsub.autoscale[,2]),col=colramp[1],lwd=3)
+for(i in 3:22){lines(density(Bsub.autoscale[,i]),lwd=3,col=colramp[i])}
+
+# one-way anova on xylose and the "comment" variable
+xylose.lm <- lm(xylose ~ comment , data = Bsub.prenorm)
+xylose.lm
+anova(xylose.lm)
+
+xylose.prenorm <- Bsub.prenorm[1:52,1:2]
+xylose.prenorm$Residuals <- xylose.lm$residuals # extracting residuals
+xylose.prenorm$Fitted.Values <- xylose.lm$fitted.values # extracting predicted fitted values.
+
+# PLot residuals vs fitted.values for assessing homogeneity of variance
+ggplot(xylose.prenorm, aes(y=Residuals, x=Fitted.Values)) + 
+  geom_point(size=3) +
+  geom_hline(yintercept = 0, colour = "red", size = 1,
+             linetype = "dashed") +
+  scale_y_continuous(labels = scales::comma) +
+  ylab("Residuals") + # y-axis label
+  xlab("Fitted values") + # x-axis label
+  theme_bw() +
+  theme(axis.title = element_text(size = 20),
+        axis.text = element_text(size=16))
+
+# Q-Q plots for assessing normality assumptions.
+
+ggplot_qqline <- function(residuals) 
+{
+  y <- quantile(residuals[!is.na(residuals)], c(0.25, 0.75))
+  x <- qnorm(c(0.25, 0.75))
+  Slope <- diff(y)/diff(x)
+  Int <- y[1] - Slope * x[1]
+  results <- c(Slope, Int)
+  names(results) <- c("Slope", "Intercept")
+  
+  results
+} # create the qqline function
+
+ggplot(xylose.prenorm, aes(sample = Residuals)) + 
+  # calculate & plot sample (residuals) and theoretical quantiles;
+  stat_qq(size = 3) + # set plotting character size to 3
+  geom_abline(slope = ggplot_qqline(xylose.prenorm$Residuals)["Slope"],
+              intercept
+              = ggplot_qqline(xylose.prenorm$Residuals)["Intercept"],
+              colour = "red") +
+  ylab("Sample quantile") + # text for y-axis label
+  xlab("Theoretical quantile") + # x-axis label
+  theme_bw() +
+  theme(axis.title = element_text(size = 20),
+        axis.text = element_text(size = 16))
+
+# Doing it again with autoscale
+# Anova
+xylose.lm2 <- lm(xylose ~ comment , data = Bsub.autoscale)
+xylose.lm2 # reveals potential misinterpretation from prenormalised data
+anova(xylose.lm2)
+
+xylose.autoscale <- Bsub.autoscale[1:52,1:2]
+xylose.autoscale$Residuals <- xylose.lm2$residuals 
+xylose.autoscale$Fitted.Values <- xylose.lm2$fitted.values 
+
+# PLot residuals vs fitted.values 
+ggplot(xylose.autoscale, aes(y=Residuals, x=Fitted.Values)) + 
+  geom_point(size=3) +
+  geom_hline(yintercept = 0, colour = "red", size = 1,
+             linetype = "dashed") +
+  scale_y_continuous(labels = scales::comma) +
+  ylab("Residuals") + 
+  xlab("Fitted values") + 
+  theme_bw() +
+  theme(axis.title = element_text(size = 20),
+        axis.text = element_text(size=16))
+
+# Q-Q plots 
+
+ggplot(xylose.autoscale, aes(sample = Residuals)) + 
+  stat_qq(size = 3) + 
+  geom_abline(slope = ggplot_qqline(xylose.autoscale$Residuals)["Slope"],
+              intercept
+              = ggplot_qqline(xylose.autoscale$Residuals)["Intercept"],
+              colour = "red") +
+  ylab("Sample quantile") + 
+  xlab("Theoretical quantile") + 
+  theme_bw() +
+  theme(axis.title = element_text(size = 20),
+        axis.text = element_text(size = 16))
+```
+# Conduct PCA
+```{r}
+# set up
+BsubPCA.pn <- Bsub.prenorm[,-1]
+BsubPCA.pn <- as.data.frame.matrix(BsubPCA.pn)
+
+# PCA
+pca <- prcomp((BsubPCA.pn), scale=FALSE)
+pca.var <- pca$sdev^2
+pca.var.per <- round(pca.var/sum(pca.var)*100, 1)
+pca.data <- data.frame(Sample=rownames(pca$x),
+                       X=pca$x[,1],
+                       Y=pca$x[,2])
+pcaplot <- ggplot(data=pca.data, aes(x=X, y=Y, label=Sample)) +
+  geom_text(aes(color=Bsub.prenorm$comment)) +
+  xlab(paste("PC1 - ", pca.var.per[1], "%", sep="")) +
+  ylab(paste("PC2 - ", pca.var.per[2], "%", sep="")) +
+  theme_bw() +
+  ggtitle("B.subtilis PCA Graph (unnormalised)")
+pcaplot
+```
+# Break up into fewer variables
+```{r}
+BsubFG.pn <- BsubPCA.pn[-c(1:8, 27:34),]
+
+# PCA with lesser variables
+BsubFG.pn <- as.data.frame.matrix(BsubFG.pn)
+
+pca <- prcomp((BsubFG.pn), scale=FALSE)
+pca.var <- pca$sdev^2
+pca.var.per <- round(pca.var/sum(pca.var)*100, 1)
+barplot(pca.var.per, main = "Scree Plot", xlab="Principal Component", ylab="Percent Variation")
+pca.data <- data.frame(Sample=rownames(pca$x),
+                       X=pca$x[,1],
+                       Y=pca$x[,2])
+pcaplot <- ggplot(data=pca.data, aes(x=X, y=Y, label=Sample)) +
+  geom_text() +
+  xlab(paste("PC1 - ", pca.var.per[1], "%", sep="")) +
+  ylab(paste("PC2 - ", pca.var.per[2], "%", sep="")) +
+  theme_bw() +
+  ggtitle("B.subtilis PCA Graph (Unnormalised)")
+pcaplot
+```
+# PCA with autoscale
+
+```{r}
+# set up
+BsubFG.as <- Bsub.autoscale[-c(1:8, 27:34),]
+BsubPCA.as <- BsubFG.as[,-1]
+BsubPCA.as <- as.data.frame.matrix(BsubPCA.as)
+
+pca <- prcomp(BsubPCA.as, retx = TRUE, center = FALSE, scale = FALSE)
+pcaresults <- summary(pca)
+pca.var <- pca$sdev^2
+pca.var.per <- round(pca.var/sum(pca.var)*100, 1)
+barplot(pca.var.per, main = "Scree Plot", xlab="Principal Component", ylab="Percent Variation")
+
+scree.data <- as.data.frame(pcaresults$importance) # same as summary(pca)
+score.data <- as.data.frame(pcaresults$x)
+loadings.data <- as.data.frame(pcaresults$rotation)
+write.csv(scree.data, "Bsub_pca_scree.csv")
+write.csv(score.data, "Bsub_pca_scores.csv")
+write.csv(loadings.data, "Bsub_pca_loadings.csv")
+
+# Score plot
+
+data <- read.csv("Bsub_pca_scores.csv", header = T)
+data <- data[,c(1:3)]
+
+Group <- BsubFG.as$comment
+data$Group <- cbind(Group)
+
+ggplot(data, aes(PC1, PC2)) +
+  geom_point(aes(shape=Group, color = Group)) +
+  geom_text(aes(label=abbreviate(Group), color = Group)) +
+  stat_ellipse(aes(colour = Group)) + 
+  xlab(paste("PC1 - ", pca.var.per[1], "%", sep="")) +
+  ylab(paste("PC2 - ", pca.var.per[2], "%", sep="")) + 
+  ggtitle("B. subtilis PCA Scores Plot")
+
+# top metabolites
+loading_scores <- pca$rotation[,1]
+metab_scores <- abs(loading_scores)
+metab_score_ranked <- sort(metab_scores, decreasing = TRUE)
+top_10_metab <- names(metab_score_ranked[1:10])
+top_10_metab
+pca$rotation[top_10_metab,1]
+
+# analyse top metabolties
+m1 <- ggplot(BsubPCA.as, aes(x=.data[["210985"]], y=BsubFG.as$comment)) +
+  geom_boxplot() +
+  geom_jitter()
+m1
+
+qplot(.data[["210985"]], .data[["223299"]], data = BsubPCA.as, colour = BsubFG.as$comment)
+qplot(.data[["110607"]], `beta-gentiobiose`, data = BsubPCA.as, colour = BsubFG.as$comment)
+```
+# Abundances
+```{r}
+source("./myggbiplot.r")
+as.pca <- prcomp(BsubPCA.as)
+
+summary(as.pca)$importance
+# autoscaled biplot
+as_pca_biplot <- myggbiplot ( as.pca , obs.scale = 1, var.scale = 1,
+                              ellipse = F,
+                              circle = FALSE ,
+                              choices = c(1, 2) ,
+                              groups = BsubFG.as$comment ,
+                              alpha = 0.7 , arrow.size = 1,
+                              varname.size =5, varname.adjust = 1.2) +
+  theme_bw () +
+  geom_point(aes( colour = BsubFG.as$comment ,
+                     shape = BsubFG.as$comment ),
+                size = 3, stroke = 1.6) +
+  scale_color_hue( name = " Treatment ",
+                      labels = levels ( BsubFG.as$comment ), l = 40) +
+  scale_shape_manual( values = 1:4 , name =" Treatment ",
+                           labels = levels ( BsubFG.as$comment )) +
+  theme( axis.text = element_text ( size = 18) ,
+          axis.title = element_text ( size = 20) ,
+          legend.title = element_text ( size = 18) ,
+          legend.text = element_text ( size = 16))
+
+as_pca_biplot
+
+#
+PCs.mat <-  round(as.pca$rotation[,1:3], digits = 5)
+pc1_loadings.df <- data.frame(Metabolite = row.names(PCs.mat), PCs.mat)
+
+ggplot(pc1_loadings.df, aes(y = PC1, x = reorder(Metabolite, -PC1))) +
+  geom_point(size = 3) +
+  geom_hline(yintercept = 0, colour = "red",
+             linetype = "dashed", size =1) +
+  xlab("Metabolite") +
+  theme_bw() +
+  theme(axis.text = element_text(size = 18),
+        axis.text.x = element_text(angle = 90, hjust = 1),
+        axis.title = element_text(size = 30))
+```
+# Fit a Linear Discriminant analysis model
+```{r}
+library(MASS)
+
+Bsub.as <- BsubFG.as[,-c(1:2)]
+
+Bsub.as.lda <- lda(comment ~ `210985` + `223299` + `110607` + 
+                     `103187` + `102301` + `2153`, data = BsubFG.as)
+Bsub.as.lda
+
+ld1.pred <- predict(Bsub.as.lda, dim = 1)
+ld1scores.df <- data.frame(Treatment=ld1.pred$class,
+                           ld1.pred$x[,1])
+ggplot(ld1scores.df, aes(y = ld1.pred.x...1., x = Treatment)) +
+  geom_point(size = 3) +
+  scale_y_continuous(breaks = seq(-9, 9, 1)) +
+  ylab("LD1 score") +
+  theme_bw() +
+  theme(axis.text = element_text(size = 18),
+        axis.title = element_text(size = 20),
+        panel.grid.minor = element_blank() +
+          coord_flip())
+
+boxplot(Bsub.prenorm[top_10_metab])
+boxplot(Bsub.autoscale[top_10_metab])
+```
 
 
 
