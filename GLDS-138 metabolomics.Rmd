@@ -393,15 +393,20 @@ ld1.pred <- predict(Bsub.as.lda, dim = 1)
 ld1scores.df <- data.frame(Treatment=ld1.pred$class,
                            ld1.pred$x[,1])
 ggplot(ld1scores.df, aes(y = ld1.pred.x...1., x = Treatment)) +
-  geom_point(size = 3) +
-  scale_y_continuous(breaks = seq(-9, 9, 1)) +
-  ggtitle("B. subtilis LD1 score") +
+  geom_jitter(size = 2, width = 0.3, aes(colour = BsubFG.as$comment)) +
+  guides(color=guide_legend("True Treatment")) +
+  scale_y_continuous(breaks = seq(-5, 5, 1)) +
+  ggtitle("Prediction of B.subtilis Treatment from LD1 score") +
   ylab("LD score") +
   theme_bw() +
-  theme(axis.text = element_text(size = 18),
+  theme(axis.text = element_text(size = 14),
         axis.title = element_text(size = 20),
+        plot.title = element_text(size = 20, face = "bold", color = "darkgreen"),
         panel.grid.minor = element_blank() +
           coord_flip())
+
+table(ld1.pred$class, BsubFG.as$comment)
+table(ld1.pred$class, BsubFG.as$comment)/(length(BsubFG.as$comment))
 
 boxplot(Bsub.prenorm[top_10_metab])
 boxplot(Bsub.autoscale[top_10_metab])
