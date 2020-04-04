@@ -378,6 +378,7 @@ ggplot(pc1_loadings.df, aes(y = PC1, x = reorder(Metabolite, -PC1))) +
   theme(axis.text = element_text(size = 18),
         axis.text.x = element_text(angle = 90, hjust = 1),
         axis.title = element_text(size = 30))
+
 ```
 # Fit a Linear Discriminant analysis model
 ```{r}
@@ -405,9 +406,17 @@ ggplot(ld1scores.df, aes(y = ld1.pred.x...1., x = Treatment)) +
         panel.grid.minor = element_blank() +
           coord_flip())
 
+# check prediction accuracy
 table(ld1.pred$class, BsubFG.as$comment)
-predpercent <- table(ld1.pred$class, BsubFG.as$comment)/(length(BsubFG.as$comment))
+table(ld1.pred$class, BsubFG.as$comment)/(length(BsubFG.as$comment))
 sum((ld1.pred$class == BsubFG.as$comment)/(length(BsubFG.as$comment)))
+
+library(predictmeans)
+
+Bsub.as.lm <- lm(`210985` ~ comment, data = BsubFG.as)
+Bsub.as.lm
+summary(Bsub.as.lm)
+anova(Bsub.as.lm)
 
 boxplot(Bsub.prenorm[top_10_metab])
 boxplot(Bsub.autoscale[top_10_metab])
