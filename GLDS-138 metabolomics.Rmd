@@ -238,7 +238,7 @@ ggplot(xylose.autoscale, aes(sample = Residuals)) +
   theme(axis.title = element_text(size = 20),
         axis.text = element_text(size = 16))
 ```
-# Conduct PCA
+# Conduct PCA on prenormalised dataset
 ```{r}
 # set up
 BsubPCA.pn <- Bsub.prenorm[,-1]
@@ -306,7 +306,7 @@ write.csv(loadings.data, "Bsub_pca_loadings.csv")
 # Score plot
 
 data <- read.csv("Bsub_pca_scores.csv", header = T)
-data <- data[,c(1:3)]
+data <- data[,c(1:4)]
 
 Group <- BsubFG.as$comment
 data$Group <- cbind(Group)
@@ -317,6 +317,14 @@ ggplot(data, aes(PC1, PC2)) +
   stat_ellipse(aes(colour = Group)) + 
   xlab(paste("PC1 - ", pca.var.per[1], "%", sep="")) +
   ylab(paste("PC2 - ", pca.var.per[2], "%", sep="")) + 
+  ggtitle("B. subtilis PCA Scores Plot")
+
+ggplot(data, aes(PC2, PC3)) +
+  geom_point(aes(shape=Group, color = Group)) +
+  geom_text(aes(label=abbreviate(Group), color = Group)) +
+  stat_ellipse(aes(colour = Group)) + 
+  xlab(paste("PC2 - ", pca.var.per[2], "%", sep="")) +
+  ylab(paste("PC3 - ", pca.var.per[3], "%", sep="")) + 
   ggtitle("B. subtilis PCA Scores Plot")
 
 # top metabolites
