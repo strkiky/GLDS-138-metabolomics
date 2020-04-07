@@ -299,9 +299,6 @@ barplot(pca.var.per, main = "Scree Plot", xlab="Principal Component", ylab="Perc
 scree.data <- as.data.frame(pcaresults$importance) # same as summary(pca)
 score.data <- as.data.frame(pcaresults$x)
 loadings.data <- as.data.frame(pcaresults$rotation)
-write.csv(scree.data, "Bsub_pca_scree.csv")
-write.csv(score.data, "Bsub_pca_scores.csv")
-write.csv(loadings.data, "Bsub_pca_loadings.csv")
 
 # Score plot
 
@@ -393,13 +390,6 @@ ggplot(pc1_loadings.df, aes(y = PC1, x = reorder(Metabolite, -PC1))) +
   theme(axis.text = element_text(size = 18),
         axis.text.x = element_text(angle = 90, hjust = 1),
         axis.title = element_text(size = 30))
-
-PCs.mat2 <- abs(PCs.mat)
-keep <- PCs.mat2$PC1
-str(PCs.mat)
-
-
-
 
 ```
 # Fit a Linear Discriminant analysis model
