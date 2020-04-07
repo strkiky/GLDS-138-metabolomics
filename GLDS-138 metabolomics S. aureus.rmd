@@ -101,26 +101,37 @@ levelscale <- function(l){
 }
 
 centerscale <- function(c){
-  colmean <- apply(l,2,mean)
-  cv <- sweep(l, 2, colmean, "-")
+  colmean <- apply(c,2,mean)
+  cv <- sweep(c, 2, colmean, "-")
   return(cv)
 }
 
 # normalise
-Bsub.autoscale <- Bsub.prenorm
-Bsub.autoscale[,2:ncol(Bsub.autoscale)] <- autoscale(Bsub.prenorm[,2:ncol(Bsub.prenorm)])
+Saur.autoscale <- Saur.prenorm
+Saur.autoscale[,2:ncol(Saur.autoscale)] <- autoscale(Saur.prenorm[,2:ncol(Saur.prenorm)])
 
-Bsub.range <- Bsub.prenorm
-Bsub.range[,2:ncol(Bsub.range)] <- rangescale(Bsub.prenorm[,2:ncol(Bsub.prenorm)])
+Saur.range <- Saur.prenorm
+Saur.range[,2:ncol(Saur.range)] <- range(Saur.prenorm[,2:ncol(Saur.prenorm)])
 
-Bsub.pareto <- Bsub.prenorm
-Bsub.pareto[,2:ncol(Bsub.pareto)] <- paretoscale(Bsub.prenorm[,2:ncol(Bsub.prenorm)])
+Saur.pareto <- Saur.prenorm
+Saur.pareto[,2:ncol(Saur.pareto)] <- paretoscale(Saur.prenorm[,2:ncol(Saur.prenorm)])
 
-Bsub.level <- Bsub.prenorm
-Bsub.level[,2:ncol(Bsub.level)] <- levelscale(Bsub.prenorm[,2:ncol(Bsub.prenorm)])
+Saur.level <- Saur.prenorm
+Saur.level[,2:ncol(Saur.autoscale)] <- levelscale(Saur.prenorm[,2:ncol(Saur.prenorm)])
 
-Bsub.centre <- Bsub.prenorm
-Bsub.centre[,2:ncol(Bsub.centre)] <- centrescale(Bsub.prenorm[,2:ncol(Bsub.prenorm)])
+Saur.centre <- Saur.prenorm
+Saur.centre[,2:ncol(Saur.centre)] <- centerscale(Saur.prenorm[,2:ncol(Saur.prenorm)])
+```
+# check on normalisation
+```{r}
+boxplot(Saur.prenorm[,2:ncol(Saur.prenorm[1:200])], col = 2, range = 0, las =2)
+boxplot(log2(Saur.prenorm[,2:ncol(Saur.prenorm[1:200])]+1), col = 2, range = 0)
+boxplot(Saur.autoscale[,2:ncol(Saur.autoscale[1:200])], col =2, range = 0, las = 2)
+boxplot(Saur.range[,2:ncol(Saur.range[1:200])], col =2, range = 0, las = 2)
+boxplot(Saur.pareto[,2:ncol(Saur.pareto[1:200])], col =2, range = 0, las = 2)
+boxplot(Saur.level[,2:ncol(Saur.level[1:200])], col =2, range = 0, las = 2)
+boxplot(Saur.centre[,2:ncol(Saur.centre[1:200])], col =2, range = 0, las = 2)
+boxplot(Saur.prenorm[,2:ncol(Saur.prenorm[1:200])], col = 2, range = 0, center = TRUE)
 ```
 
 
