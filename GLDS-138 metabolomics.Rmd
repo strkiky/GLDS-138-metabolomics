@@ -305,7 +305,7 @@ write.csv(loadings.data, "Bsub_pca_loadings.csv")
 
 # Score plot
 
-data <- read.csv("Bsub_pca_scores.csv", header = T)
+data <- score.data
 data <- data[,c(1:4)]
 
 Group <- BsubFG.as$comment
