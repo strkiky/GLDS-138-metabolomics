@@ -160,6 +160,41 @@ ggplot(PC123, aes(PC2, PC3)) +
   xlab(paste("PC2 - ", pca.var.per[2], "%", sep="")) +
   ylab(paste("PC3 - ", pca.var.per[3], "%", sep="")) + 
   ggtitle("S. aureus PCA Scores Plot")
+```
+
+# Look at top metabolites
+```{r}
+loading_scores <- pca$rotation[,1]
+metab_scores <- abs(loading_scores)
+metab_score_ranked <- sort(metab_scores, decreasing = TRUE)
+top_10_metab <- names(metab_score_ranked[1:10])
+top_10_metab
+pca$rotation[top_10_metab,1]
+
+# analyse top metabolties
+m1 <- ggplot(SaurPCA.as, aes(x=.data[["102304"]], y=Saur.as$comment)) +
+  geom_boxplot() +
+  geom_jitter()
+m1
+
+qplot(.data[["102304"]], .data[["130478"]], data = SaurPCA.as, colour = Saur.as$comment)
+
+# plot PC1 loadings versus metabolite
+as.pca <- prcomp(SaurPCA.as)
+
+PCs.mat <-  round(as.pca$rotation[,1:3], digits = 5)
+pc1_loadings.df <- data.frame(Metabolite = row.names(PCs.mat), PCs.mat)
+
+ggplot(pc1_loadings.df, aes(y = PC1, x = reorder(Metabolite, -PC1))) +
+  geom_point(size = 3) +
+  geom_hline(yintercept = 0, colour = "red",
+             linetype = "dashed", size =1) +
+  xlab("Metabolite") +
+  theme_bw() +
+  theme(axis.text = element_text(size = 18),
+        axis.text.x = element_text(angle = 90, hjust = 1),
+        axis.title = element_text(size = 30))
+
 
 ```
 
