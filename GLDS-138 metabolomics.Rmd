@@ -109,8 +109,8 @@ levelscale <- function(l){
 }
 
 centerscale <- function(c){
-  colmean <- apply(l,2,mean)
-  cv <- sweep(l, 2, colmean, "-")
+  colmean <- apply(c,2,mean)
+  cv <- sweep(c, 2, colmean, "-")
   return(cv)
 }
 
