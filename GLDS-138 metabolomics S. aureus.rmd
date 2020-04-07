@@ -97,26 +97,62 @@ lines(density(Saur.prenorm[,3]),col=3)
 plot(density(Saur.autoscale[,2]),col=2) # density-plot
 lines(density(Saur.autoscale[,3]),col=3)
 ```
-# Conduct PCA
+# Conduct PCA 
 ```{r}
 # set up
-BsubPCA.pn <- Bsub.prenorm[,-1]
-BsubPCA.pn <- as.data.frame.matrix(BsubPCA.pn)
+SaurPCA.autoscale <- Saur.autoscale[,-1]
+SaurPCA.autoscale <- as.data.frame(SaurPCA.autoscale)
 
 # PCA
-pca <- prcomp((BsubPCA.pn), scale=FALSE)
+pca <- prcomp(SaurPCA.autoscale)
 pca.var <- pca$sdev^2
 pca.var.per <- round(pca.var/sum(pca.var)*100, 1)
+barplot(pca.var.per, main = "Scree Plot", xlab="Principal Component", ylab="Percent Variation")
 pca.data <- data.frame(Sample=rownames(pca$x),
                        X=pca$x[,1],
                        Y=pca$x[,2])
 pcaplot <- ggplot(data=pca.data, aes(x=X, y=Y, label=Sample)) +
-  geom_text(aes(color=Bsub.prenorm$comment)) +
+  geom_text(aes(color=Saur.autoscale$comment)) +
   xlab(paste("PC1 - ", pca.var.per[1], "%", sep="")) +
   ylab(paste("PC2 - ", pca.var.per[2], "%", sep="")) +
   theme_bw() +
-  ggtitle("B.subtilis PCA Graph (unnormalised)")
+  ggtitle("S.aureus PCA Graph")
 pcaplot
+```
+Difficult to discern difference between Media Positive Ctrl ASAP and Frozen, and Pellet Positive Ctrl ASAP and Frozen separately.
+Problem is that Media Positive FROZEN does not have the expression as Ground Control, meaning potential batch effects.
+
+# Fewer variables
+```{r}
+# Break up into fewer variables
+Saur.as <- Saur.autoscale[-c(19:26, 45:52),]
+SaurPCA.as <- Saur.as[,-1]
+SaurPCA.as <- as.data.frame(SaurPCA.as)
+
+# PCA
+pca <- prcomp(SaurPCA.as, retx = TRUE, center = FALSE, scale = FALSE)
+pcaresults <- summary(pca)
+pca.var <- pca$sdev^2
+pca.var.per <- round(pca.var/sum(pca.var)*100, 1)
+barplot(pca.var.per, main = "Scree Plot", xlab="Principal Component", ylab="Percent Variation")
+
+SAscree.data <- as.data.frame(pcaresults$importance) # same as summary(pca)
+SAscore.data <- as.data.frame(pcaresults$x)
+SAloadings.data <- as.data.frame(pcaresults$rotation)
+
+PC123 <- SAscore.data[,c(1:3)]
+
+Group <- Saur.as$comment
+PC123$Group <- cbind(Group)
+
+ggplot(PC123, aes(PC1, PC2)) +
+  geom_point(aes(shape=Group, color = Group)) +
+  geom_text(aes(label=abbreviate(Group), color = Group)) +
+  stat_ellipse(aes(colour = Group)) + 
+  xlab(paste("PC1 - ", pca.var.per[1], "%", sep="")) +
+  ylab(paste("PC2 - ", pca.var.per[2], "%", sep="")) + 
+  ggtitle("S. aureus PCA Scores Plot")
+
 ```
 
 
