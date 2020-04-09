@@ -81,7 +81,7 @@ write.csv(Saur.data,"GLDS138.Saur.csv", row.names = F)
 
 library(MetaboAnalystR)
 ```
-# B. subtilis analysis
+# B. subtilis - Statistical analysis
 ```{r}
 # set up
 mSet<-InitDataObjects("pktable", "stat", FALSE)
@@ -145,6 +145,13 @@ mSet<-PlotRF.VIP(mSet, "rf_imp_1_", "png", 72, width=NA)
 mSet<-PlotRF.Outlier(mSet, "rf_outlier_1_", "png", 72, width=NA)
 
 mSet<-SaveTransformedData(mSet)
+```
+# Fewer variables
+```{r}
+BsubFG <- Bsub.data[-c(1:8, 27:34),]
+setwd("C:/Users/strki/Documents/Git_R/GLDS-138 metabolomics/GLDS-138-metabolomics/BsubFG")
+write.csv(BsubFG,"GLDS138.BsubFG.csv", row.names = F)
+
 ```
 
 
