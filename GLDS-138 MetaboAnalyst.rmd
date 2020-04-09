@@ -32,12 +32,48 @@ rownames(Bdata) <- NULL
 Bdata[1,1] <- "Sample"   # renaming to suit MetaboAnalyst
 Bdata[1,2] <- "Label"
 
+# Giving column and row names
+columnName <- Bdata[1,]
+colnames(Bdata) <- columnName
 Bdata <- Bdata[-1,]
-Bdata <- Bdata[,-1]
 Bdata <- as.data.frame(Bdata)
 
 # as.numeric
-Bdata[,3:ncol(Bdata)] <- lapply(Bdata[,3:ncol(Bdata)], function(x) as.numeric(as.character(x)))
+Bdata[,4:ncol(Bdata)] <- lapply(Bdata[,4:ncol(Bdata)], function(x) as.numeric(as.character(x)))
+```
+```{r}
+# Row-wise correction
+BdataRWC <- as.data.frame(Bdata)
+rowi <- BdataRWC[,4:ncol(BdataRWC)]
+
+BdataRWC[,4:ncol(BdataRWC)] <- rowi / rowSums(rowi) # by the peak of all sums
+
+sum(BdataRWC[105,4:ncol(BdataRWC)]) # checking the row wise correction worked well
+
+# Baseline correction
+tail(BdataRWC[,1:5], 1)
+
+blc <- tail(BdataRWC,1)
+tail(blc[,1:5],1)
+BdataRWC1 <- BdataRWC[-nrow(BdataRWC),]
+BdataBLC <- BdataRWC1 # creating an intermediate step so no rows are accidentally deleted
+
+BdataBLC[,4:ncol(BdataBLC)] <- BdataBLC[,4:ncol(BdataBLC)] - blc[rep(1,104),4:ncol(blc)]
+
+# xylose <- BdataRWC1[1,4] - blc[,4] # double check that the values are correct
+# mb39 <- BdataRWC1[104,715] - blc[,715]
+
+utils::View(BdataBLC)
+
+# separating B. subtilis and S. aureus dataset
+Bsub.data <- BdataBLC[1:52,]     # B.subtilis pre-normalisation
+Bsub.data <- Bsub.data[,-3]
+Bsub.data$Label <- gsub("B. subtilis", "", Bsub.data$Label)
+Saur.data <- BdataBLC[53:104,]   # S. aureus  pre-normalisation
+rownames(Saur.data) <- NULL
+Saur.data <- Saur.data[,-3]
+Saur.data$Label <- gsub("S. aureus", "", Saur.data$Label)
+Saur.data$Label <- gsub("S. Aureus", "", Saur.data$Label)
 ```
 
 
