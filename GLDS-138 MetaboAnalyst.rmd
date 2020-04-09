@@ -79,6 +79,19 @@ Saur.data$Label <- gsub("S. Aureus", "", Saur.data$Label)
 ```{r}
 write.csv(Bsub.data,"GLDS138.Bsub.csv", row.names = F)
 write.csv(Saur.data,"GLDS138.Saur.csv", row.names = F)
+
+library(MetaboAnalystR)
+```
+# B. subtilis
+```{r}
+mSet<-InitDataObjects("pktable", "stat", FALSE)
+mSet<-Read.TextData(mSet, "GLDS138.Bsub.csv", "rowu", "disc");
+mSet<-SanityCheckData(mSet)
+mSet<-ReplaceMin(mSet);
+mSet<-PreparePrenormData(mSet)
+mSet<-Normalization(mSet, "NULL", "NULL", "AutoNorm", ratio=FALSE, ratioNum=20)
+mSet<-PlotNormSummary(mSet, "norm_0_", "png", 72, width=NA)
+mSet<-PlotSampleNormSummary(mSet, "snorm_0_", "png", 72, width=NA)
 ```
 
 
