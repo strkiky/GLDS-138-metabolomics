@@ -77,8 +77,8 @@ Saur.data$Label <- gsub("S. Aureus", "", Saur.data$Label)
 ```
 # Create csv for MetaboAnalyst
 ```{r}
-write.csv(Bsub.data,"GLDS138.Bsub.csv")
-write.csv(Saur.data,"GLDS138.Saur.csv")
+write.csv(Bsub.data,"GLDS138.Bsub.csv", row.names = F)
+write.csv(Saur.data,"GLDS138.Saur.csv", row.names = F)
 ```
 
 
