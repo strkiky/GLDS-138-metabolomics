@@ -14,7 +14,6 @@ knitr::opts_chunk$set(echo = TRUE)
 ```{r}
 # Load libraries
 rm(list = ls())
-library(ggplot2)
 setwd("C:/Users/strki/Documents/Git_R/GLDS-138 metabolomics/GLDS-138-metabolomics")
 
 # Same dataset as B. subtilis, so no download require
@@ -115,7 +114,7 @@ mSet<-PlotCorrHeatMap(mSet, "corr_0_", "png", 72, width=NA, "col", "pearson", "b
 mSet<-PlotCorrHeatMap(mSet, "corr_1_", "png", 72, width=NA, "row", "pearson", "bwm", "overview", F, F, F, 999)
 
 
-# Heatmap
+# PCA
 mSet<-PCA.Anal(mSet)
 mSet<-PlotPCAPairSummary(mSet, "pca_pair_0_", "png", 72, width=NA, 5)
 mSet<-PlotPCAScree(mSet, "pca_scree_0_", "png", 72, width=NA, 5)
@@ -124,6 +123,8 @@ mSet<-PlotPCALoading(mSet, "pca_loading_0_", "png", 72, width=NA, 1,2);
 mSet<-PlotPCABiplot(mSet, "pca_biplot_0_", "png", 72, width=NA, 1,2)
 mSet<-PlotPCA3DLoading(mSet, "pca_loading3d_0_", "json", 1,2,3)
 mSet<-PlotPCAPairSummary(mSet, "pca_pair_1_", "png", 72, width=NA, 4)
+
+# PLS-DA
 mSet<-PLSR.Anal(mSet, reg=TRUE)
 mSet<-PlotPLSPairSummary(mSet, "pls_pair_0_", "png", 72, width=NA, 5)
 mSet<-PlotPLS2DScore(mSet, "pls_score2d_0_", "png", 72, width=NA, 1,2,0.95,0,0)
@@ -133,6 +134,7 @@ mSet<-PlotPLS3DLoading(mSet, "pls_loading3d_0_", "json", 1,2,3)
 mSet<-PLSDA.CV(mSet, "L",4, "Q2")
 mSet<-PlotPLS.Classification(mSet, "pls_cv_0_", "png", 72, width=NA)
 mSet<-PlotPLS.Imp(mSet, "pls_imp_0_", "png", 72, width=NA, "vip", "Comp. 1", 15,FALSE)
+
 mSet<-Match.Pattern(mSet, "pearson", "1-2-3-4-5-6-7-8")
 mSet<-PlotCorr(mSet, "ptn_9_", "png", 72, width=NA)
 mSet<-Match.Pattern(mSet, "pearson", "8-7-6-5-4-3-2-1")
@@ -141,17 +143,16 @@ mSet<-Match.Pattern(mSet, "pearson", "1-2-3-4-5-4-3-2")
 mSet<-PlotCorr(mSet, "ptn_11_", "png", 72, width=NA)
 mSet<-Match.Pattern(mSet, "pearson", "5-4-3-2-1-2-3-4")
 mSet<-PlotCorr(mSet, "ptn_12_", "png", 72, width=NA)
+
+# Hierarchical Clustering
 mSet<-PlotHCTree(mSet, "tree_0_", "png", 72, width=NA, "euclidean", "ward.D")
-mSet<-PlotHCTree(mSet, "tree_1_", "png", 72, width=NA, "euclidean", "complete")
-mSet<-PlotHeatMap(mSet, "heatmap_0_", "png", 72, width=NA, "norm", "row", "euclidean", "ward.D","bwm", "overview", T, T, NA, T, F)
-mSet<-Kmeans.Anal(mSet, 3)
-mSet<-PlotKmeans(mSet, "km_0_", "png", 72, width=NA)
+mSet<-PlotHeatMap(mSet, "heatmap_0_", "png", 300, width=NA, "norm", "row", "euclidean", "ward.D","bwm", "overview", T, T, NA, T, F)
+
+#Kmeans
 mSet<-Kmeans.Anal(mSet, 4)
-mSet<-PlotKmeans(mSet, "km_1_", "png", 72, width=NA)
-mSet<-RF.Anal(mSet, 500,7,1)
-mSet<-PlotRF.Classify(mSet, "rf_cls_0_", "png", 72, width=NA)
-mSet<-PlotRF.VIP(mSet, "rf_imp_0_", "png", 72, width=NA)
-mSet<-PlotRF.Outlier(mSet, "rf_outlier_0_", "png", 72, width=NA)
+mSet<-PlotKmeans(mSet, "km_1_", "png", 150, width=NA)
+
+# Random Forest
 mSet<-RF.Anal(mSet, 1000,7,1)
 mSet<-PlotRF.Classify(mSet, "rf_cls_1_", "png", 72, width=NA)
 mSet<-PlotRF.VIP(mSet, "rf_imp_1_", "png", 72, width=NA)
