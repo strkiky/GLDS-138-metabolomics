@@ -248,19 +248,16 @@ mSet<-ANOVA.Anal(mSet, F, 1.0E-3, "fisher", FALSE)
 mSet<-PlotANOVA(mSet, "aov_fisher_", "png", 72, width=NA)
 mSet<-ANOVA.Anal(mSet, F, 1.0E-3, "tukey", FALSE)
 mSet<-PlotANOVA(mSet, "aov_tukey_", "png", 72, width=NA)
+# appears to be the same/similar metabolites as with more variables
 
 # Correlation analysis
-mSet<-PlotCorrHeatMap(mSet, "corr_1_", "png", 102, width=NA, "row", "pearson", "bwm", "overview", F, F, F, 999)
+mSet<-PlotCorrHeatMap(mSet, "corr_1_", "png", 102, width=NA, "row", "pearson", "topo", "overview", F, F, F, 999)
 
 # Pattern Hunter
-mSet<-Match.Pattern(mSet, "pearson", "1-2-3-4")
+mSet<-Match.Pattern(mSet, "pearson", "1-2")
 mSet<-PlotCorr(mSet, "ptn_1_", "png", 72, width=NA) 
-mSet<-Match.Pattern(mSet, "pearson", "4-3-2-1")
+mSet<-Match.Pattern(mSet, "pearson", "2-1")
 mSet<-PlotCorr(mSet, "ptn_2_", "png", 72, width=NA)
-mSet<-Match.Pattern(mSet, "pearson", "1-2-3-2")
-mSet<-PlotCorr(mSet, "ptn_3_", "png", 72, width=NA)
-mSet<-Match.Pattern(mSet, "pearson", "3-2-1-2")
-mSet<-PlotCorr(mSet, "ptn_4_", "png", 72, width=NA)
 
 # PCA
 mSet<-PCA.Anal(mSet)
