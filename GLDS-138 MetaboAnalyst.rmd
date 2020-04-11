@@ -148,6 +148,7 @@ mSet<-SaveTransformedData(mSet)
 ```
 # Bsub with fewer variables
 ```{r}
+rm(list = ls())
 BsubFG <- Bsub.data[-c(1:8, 27:34),]
 setwd("C:/Users/strki/Documents/Git_R/GLDS-138 metabolomics/GLDS-138-metabolomics/BsubFG")
 write.csv(BsubFG,"GLDS138.BsubFG.csv", row.names = F)
@@ -219,6 +220,84 @@ mSet<-PlotRF.Outlier(mSet, "rf_outlier_1_", "png", 72, width=NA)
 mSet<-SaveTransformedData(mSet)
 ```
 
+# Separate media and pellet
+# First try out pellet
+
+```{r}
+rm(list = ls())
+setwd("C:/Users/strki/Documents/Git_R/GLDS-138 metabolomics/GLDS-138-metabolomics/BsubFG")
+GLDS138.BsubFGP <- read.csv("GLDS138.BsubFG.csv")
+GLDS138.BsubFGP <- GLDS138.BsubFGP[-c(1:18),]
+setwd("C:/Users/strki/Documents/Git_R/GLDS-138 metabolomics/GLDS-138-metabolomics/BsubFGP")
+write.csv(GLDS138.BsubFGP,"GLDS138.BsubFGP.csv", row.names = F)
+
+library(MetaboAnalystR)
+
+# set up
+mSet<-InitDataObjects("pktable", "stat", FALSE)
+mSet<-Read.TextData(mSet, "GLDS138.BsubFGP.csv", "rowu", "disc");
+mSet<-SanityCheckData(mSet)
+mSet<-ReplaceMin(mSet);
+mSet<-PreparePrenormData(mSet)
+mSet<-Normalization(mSet, "NULL", "NULL", "AutoNorm", ratio=FALSE, ratioNum=20)
+mSet<-PlotNormSummary(mSet, "norm_0_", "png", 72, width=NA)
+mSet<-PlotSampleNormSummary(mSet, "snorm_0_", "png", 72, width=NA)
+
+# Anova
+mSet<-ANOVA.Anal(mSet, F, 1.0E-9, "fisher", FALSE)
+mSet<-PlotANOVA(mSet, "aov_0_", "png", 72, width=NA)
+mSet<-ANOVA.Anal(mSet, F, 1.0E-9, "tukey", FALSE)
+mSet<-PlotANOVA(mSet, "aov_10_", "png", 72, width=NA)
+
+# Correlation analysis
+mSet<-PlotCorrHeatMap(mSet, "corr_1_", "png", 102, width=NA, "row", "pearson", "bwm", "overview", F, F, F, 999)
+
+# Pattern Hunter
+mSet<-Match.Pattern(mSet, "pearson", "1-2-3-4")
+mSet<-PlotCorr(mSet, "ptn_1_", "png", 72, width=NA) 
+mSet<-Match.Pattern(mSet, "pearson", "4-3-2-1")
+mSet<-PlotCorr(mSet, "ptn_2_", "png", 72, width=NA)
+mSet<-Match.Pattern(mSet, "pearson", "1-2-3-2")
+mSet<-PlotCorr(mSet, "ptn_3_", "png", 72, width=NA)
+mSet<-Match.Pattern(mSet, "pearson", "3-2-1-2")
+mSet<-PlotCorr(mSet, "ptn_4_", "png", 72, width=NA)
+
+# PCA
+mSet<-PCA.Anal(mSet)
+mSet<-PlotPCAPairSummary(mSet, "pca_pair_0_", "png", 102, width=NA, 5)
+mSet<-PlotPCAScree(mSet, "pca_scree_0_", "png", 72, width=NA, 5)
+mSet<-PlotPCA2DScore(mSet, "pca_score2d_0_", "png", 72, width=NA, 1,2,0.95,0,0)
+mSet<-PlotPCALoading(mSet, "pca_loading_0_", "png", 72, width=NA, 1,2);
+mSet<-PlotPCABiplot(mSet, "pca_biplot_0_", "png", 102, width=NA, 1,2)
+mSet<-PlotPCA3DLoading(mSet, "pca_loading3d_0_", "json", 1,2,3)
+
+# PLS-DA
+mSet<-PLSR.Anal(mSet, reg=TRUE)
+mSet<-PlotPLSPairSummary(mSet, "pls_pair_0_", "png", 72, width=NA, 5)
+mSet<-PlotPLS2DScore(mSet, "pls_score2d_0_", "png", 72, width=NA, 1,2,0.95,0,0)
+mSet<-PlotPLS3DScoreImg(mSet, "pls_score3d_0_", "png", 72, width=NA, 1,2,3, 40)
+mSet<-PlotPLSLoading(mSet, "pls_loading_0_", "png", 72, width=NA, 1, 2);
+mSet<-PlotPLS3DLoading(mSet, "pls_loading3d_0_", "json", 1,2,3)
+mSet<-PLSDA.CV(mSet, "L",4, "Q2")
+mSet<-PlotPLS.Classification(mSet, "pls_cv_0_", "png", 72, width=NA)
+mSet<-PlotPLS.Imp(mSet, "pls_imp_0_", "png", 72, width=NA, "vip", "Comp. 1", 15,FALSE)
+
+# Hierarchical Clustering
+mSet<-PlotHCTree(mSet, "tree_0_", "png", 72, width=NA, "euclidean", "ward.D")
+mSet<-PlotHeatMap(mSet, "heatmap_0_", "png", 300, width=NA, "norm", "row", "euclidean", "ward.D","bwm", "overview", T, T, NA, T, F)
+
+#Kmeans
+mSet<-Kmeans.Anal(mSet, 4)
+mSet<-PlotKmeans(mSet, "km_1_", "png", 150, width=NA)
+
+# Random Forest
+mSet<-RF.Anal(mSet, 1000,7,1)
+mSet<-PlotRF.Classify(mSet, "rf_cls_1_", "png", 72, width=NA)
+mSet<-PlotRF.VIP(mSet, "rf_imp_1_", "png", 72, width=NA)
+mSet<-PlotRF.Outlier(mSet, "rf_outlier_1_", "png", 72, width=NA)
+
+mSet<-SaveTransformedData(mSet)
+```
 
 
 
