@@ -296,6 +296,36 @@ mSet<-PlotRF.Outlier(mSet, "rf_outlier_1_", "png", 72, width=NA)
 mSet<-SaveTransformedData(mSet)
 ```
 
+# ROC analysis with just pellet
+```{r}
+rm(list = ls())
+# Set up
+mSet<-InitDataObjects("pktable", "roc", FALSE)
+mSet<-Read.TextData(mSet, "GLDS138.BsubFGP.csv", "rowu", "disc");
+mSet<-SanityCheckData(mSet)
+mSet<-ReplaceMin(mSet);
+mSet<-PreparePrenormData(mSet)
+mSet<-Normalization(mSet, "NULL", "NULL", "AutoNorm", ratio=FALSE, ratioNum=20)
+#check normalisation
+mSet<-PlotNormSummary(mSet, "norm_0_", "png", 72, width=NA)
+mSet<-PlotSampleNormSummary(mSet, "snorm_0_", "png", 72, width=NA)
+
+# Univariate - meaningless as AUC is always 1-1
+mSet<-SetAnalysisMode(mSet, "univ")
+mSet<-PrepareROCData(mSet)
+mSet<-CalculateFeatureRanking(mSet)
+mSet<-Perform.UnivROC(mSet, "ribonic acid", "ribonic acid_0_", "png", 72, F, T, "closest.topleft", F, "sp", 0.2)
+mSet<-PlotBoxPlot(mSet, "ribonic acidboxplot", "ribonic acidboxplot_0_", "png", 72, T, FALSE)
+
+#Multivariate
+mSet<-SetAnalysisMode(mSet, "explore")
+mSet<-PrepareROCData(mSet)
+mSet<-PerformCV.explore(mSet, "pls", "rf", 2)
+mSet<-PlotProbView(mSet, "cls_prob_0_", "png", 72, -1, 0, 0)
+mSet<-PlotImpVars(mSet, "cls_imp_0_", "png", 72, -1, "freq", 15);
+mSet<-PlotAccuracy(mSet, "cls_accu_0_", "png", 72)
+mSet<-PlotROC(mSet, "cls_roc_0_", "png", 72, 0, "threshold", 0, 0, "fpr", 0.5)
+```
 
 
 
