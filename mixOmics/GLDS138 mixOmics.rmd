@@ -32,10 +32,10 @@ BsubFG.as <- BsubFG
 BsubFG.as[,2:ncol(BsubFG.as)] <- autoscale(BsubFG[,2:ncol(BsubFG)])
 
 X <- BsubFG.as[,2:ncol(BsubFG.as)]
-
+```
+```{r}
+# Quick Plots
 MyResult.pca <- pca(X, ncomp = 3)
-
-# Quick plots
 plotIndiv(MyResult.pca, group = BsubFG.as$Label, ellipse = TRUE, style = "lattice", legend = TRUE, ind.names = FALSE, comp = c(1,2))
 plotVar(MyResult.pca)
 
@@ -54,7 +54,19 @@ MyResult.pca
 plotLoadings(MyResult.pca, ndisplay = 60,
              size.name = rel(0.55))
 
-
+# Variable selection with sparse PCA
+MyResult.spca <- spca(X, ncomp = 3, keepX = c(15, 10, 5)) # top 15, 10, 5 metabolites from PC1, PC2 and PC3
+plotIndiv(MyResult.spca, group = BsubFG.as$Label, 
+          # pch = as.factor() if a second factor can be used
+          legend = TRUE, legend.title = "Treatment", # legend.title.pch = 'if used'
+          title = "Spaceflight vs Ground: Metabolites, sPCA comp 1-2",
+          ellipse = TRUE)
+plotVar(MyResult.spca, cex = 3)  
+selectVar(MyResult.spca, comp = 1)$value
+plotLoadings(MyResult.spca, comp = 1)
+selectVar(MyResult.spca, comp = 2)$value
+plotLoadings(MyResult.spca, comp = 2)
+tune.pca(X)
 
 ```
 
