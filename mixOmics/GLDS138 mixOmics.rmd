@@ -69,7 +69,32 @@ plotLoadings(MyResult.spca, comp = 2)
 tune.pca(X)
 
 ```
+#Partial Least Squares - Discriminant Analysis
+```{r}
+# set up
+X <- BsubFG.as[,-1]
+Y <- test$Treatment
+summary(Y)
+dim(X)
+length(Y)
 
+# PLS-DA
+MyResult.plsda <- plsda(X,Y)
+plotIndiv(MyResult.plsda)
+plotVar(MyResult.plsda, cutoff = 0.7)
+
+# sPLS-DA
+MyResult.splsda <- splsda(X, Y, ncomp = 3, keepX = c(60,60,60))
+plotIndiv(MyResult.splsda, ind.names = FALSE, legend = TRUE,
+          ellipse = TRUE, star = TRUE, title = 'sPLS-DA on BsubFG.as',
+          X.label = 'PLS-DA 1', Y.label = 'PLS-DA 2')
+plotVar(MyResult.splsda)
+selectVar(MyResult.splsda, comp = 1)$name
+
+
+
+
+```
 
 
 
