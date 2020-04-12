@@ -16,6 +16,28 @@ rm(list = ls())
 setwd("C:/Users/strki/Documents/Git_R/GLDS-138 metabolomics/GLDS-138-metabolomics/mixOmics")
 library(mixOmics)
 
+BsubFG <- read.csv("GLDS138.BsubFG.csv", check.names = FALSE, header = TRUE, row.names = 1)
+
+# autoscale function
+autoscale <- function(a){
+  colmean <- apply(a,2,mean) # column mean
+  colsd <- apply(a, 2, sd) # col standard deviation
+  cv <- sweep(a, 2, colmean, "-") # minus mean center
+  cv <- sweep(cv, 2, colsd, "/") # divide by sd
+  return(cv)
+}
+
+# Normalise
+BsubFG.as <- BsubFG
+BsubFG.as[,2:ncol(BsubFG.as)] <- autoscale(BsubFG[,2:ncol(BsubFG)])
+
+X <- BsubFG.as[,2:ncol(BsubFG.as)]
+
+MyResult.pca <- pca(X)
+
+# Quick plots
+plotIndiv(MyResult.pca, group = BsubFG.as$Label, ellipse = TRUE, style = "lattice", legend = TRUE, ind.names = FALSE, comp = c(1,2))
+plotVar(MyResult.pca)
 
 
 ```
