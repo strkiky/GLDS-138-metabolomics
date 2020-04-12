@@ -73,7 +73,7 @@ tune.pca(X)
 ```{r}
 # set up
 X <- BsubFG.as[,-1]
-Y <- test$Treatment
+Y <- BsubFG.as$Label
 summary(Y)
 dim(X)
 length(Y)
@@ -91,7 +91,14 @@ plotIndiv(MyResult.splsda, ind.names = FALSE, legend = TRUE,
 plotVar(MyResult.splsda)
 selectVar(MyResult.splsda, comp = 1)$name
 
+# Background prediction
+background <- background.predict(MyResult.splsda, comp.predicted = 2,
+                                 dist = "max.dist")
+plotIndiv(MyResult.splsda, comp = 1:2, group = BsubFG.as$Label,
+          ind.names = FALSE, title = "Maximum distance",
+          legend = TRUE,  background = background)
 
+# 
 
 
 ```
