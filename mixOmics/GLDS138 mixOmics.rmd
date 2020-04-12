@@ -33,11 +33,27 @@ BsubFG.as[,2:ncol(BsubFG.as)] <- autoscale(BsubFG[,2:ncol(BsubFG)])
 
 X <- BsubFG.as[,2:ncol(BsubFG.as)]
 
-MyResult.pca <- pca(X)
+MyResult.pca <- pca(X, ncomp = 3)
 
 # Quick plots
 plotIndiv(MyResult.pca, group = BsubFG.as$Label, ellipse = TRUE, style = "lattice", legend = TRUE, ind.names = FALSE, comp = c(1,2))
 plotVar(MyResult.pca)
+
+# sparse PCA
+MyResult.spca <- spca(X, keepX = c(5,5)) # keep top 5 variables of PC1&2
+plotIndiv(MyResult.spca, group = BsubFG.as$Label, ellipse = TRUE, style = "ggplot2", legend = TRUE, ind.names = FALSE, comp = c(1,2))
+plotVar(MyResult.spca)
+
+# Other PCA
+plotIndiv(MyResult.pca, group = BsubFG.as$Label, ellipse = TRUE, style = "3d", legend = TRUE, ind.names = FALSE, 
+          title = "Spaceflight vs Ground: Metabolites, PCA comp 1-2-3")
+plotVar(MyResult.pca, cutoff = 0.8)
+plotVar(MyResult.pca, cutoff =  0.8, style = "3d")
+plot(MyResult.pca)
+MyResult.pca
+plotLoadings(MyResult.pca, ndisplay = 60,
+             size.name = rel(0.55))
+
 
 
 ```
