@@ -12,7 +12,6 @@ knitr::opts_chunk$set(echo = TRUE)
 ```
 # Initial set up
 ```{r}
-# Load libraries
 rm(list = ls())
 setwd("C:/Users/strki/Documents/Git_R/GLDS-138 metabolomics/GLDS-138-metabolomics")
 
