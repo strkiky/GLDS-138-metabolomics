@@ -165,6 +165,28 @@ mdata <- mdata[,-1]
 mdata$Label <- substr(mdata$Label, start=8, stop = 14)
 mdat <- mdata[,-1]
 ```
+```{r}
+#quick start on PLS
+X <- edata
+Y <- mdat
+dim(X); dim(Y)
+
+MyResult.spls <- spls(X, Y, keepX = c(25, 25), keepY = c(10,10))
+plotIndiv(MyResult.spls)
+plotVar(MyResult.spls, cex = c(3,2.5), legend = TRUE)
+
+plotIndiv(MyResult.spls, group = mdata$Label,
+          rep.space = "XY-variate", legend = TRUE,
+          legend.title = 'Treatment',
+          title = 'Spaceflight Bacillus subtilis: sPLS')
+
+
+
+
+
+
+
+```
 
 
 
