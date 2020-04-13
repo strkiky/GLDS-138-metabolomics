@@ -154,6 +154,7 @@ edata <- edata[,-1]
 colnames(edata) <- substr(colnames(edata),start=16,stop=23)
 edata <- as.data.frame(edata)
 edata <- t(edata)
+rowNameE <- rownames(edata)
 
 # set up metabolomic data
 setwd("C:/Users/strki/Documents/Git_R/GLDS-138 metabolomics/GLDS-138-metabolomics/BsubFGP")
@@ -200,9 +201,42 @@ MySelectedVariables$X$name # Selected genes on component 1
 
 MySelectedVariables$Y$name # Selected lipids on component 1
 
+plotLoadings(MyResult.spls, comp = 1, size.name = rel(0.5))
+```
+# Multi-block Discriminant Analysis with DIABLO
+```{r}
+# build on the setup from the PLS
+rownames(mdat) <- rowNameE
+mdata$Label <- as.factor(mdata$Label)
+X <- list(RNA = edata,
+          metabolite = mdat)
+Y <- mdata$Label
+summary(Y)
+
+list.keepX <- list(RNA = c(16,17), metabolite = c(10,5))
+
+# quick start
+MyResult.diablo <- block.splsda(X, Y, keepX=list.keepX)
+plotIndiv(MyResult.diablo,
+          ind.names = FALSE,
+          legend = TRUE, cex = c(1,2),
+          title = "Spaceflight B. subtilis with DIABLO") ## sample plot
+plotVar(MyResult.diablo, var.names = c(FALSE, TRUE),
+        legend = TRUE, pch = c(16, 2))
+plotDiablo(MyResult.diablo, ncomp = 1)
 
 
+# does not work yet
+circosPlot(MyResult.diablo, cutoff = 0.7)
+cimDiablo(MyResult.diablo, color.blocks = c('darkorchid', 'brown1'), comp = 1, margin=c(8,20), legend.position = "right")
+plotLoadings(MyResult.diablo, comp = 2, contrib = "max")
 
+# Relevance network
+network(MyResult.diablo, blocks = c(1,2),
+        color.node = c('darkorchid', 'brown1'), 
+        cutoff = 0.6, save = 'jpeg', name.save = 'DIABLOnetwork')
+
+MyResult.diablo2 <- block.plsda(X, Y)
 ```
 
 
