@@ -139,6 +139,25 @@ MyResult.splsda.final <- splsda(X, Y, ncomp = ncomp, keepX = select.keepX)
 plotIndiv(MyResult.splsda.final, ind.names = FALSE, legend=TRUE,
           ellipse = TRUE, title="sPLS-DA - final result")
 ```
+# Projection to Latent Structure (PLS)
+```{r}
+# Set up transcriptomic data
+file_url <- "https://genelab-data.ndc.nasa.gov/genelab/static/media/dataset/GLDS-138_rna_seq_Normalized_Counts.csv?version=1"
+GLDS138RNA = 'GLDS-138_rna_seq_Normalized_Counts.csv'
+download.file(file_url, GLDS138RNA)
+edata <- read.csv(GLDS138RNA, stringsAsFactors = FALSE)
+
+trop = RSkittleBrewer("tropical")
+palette(trop)
+par(pch=19)
+
+dim(edata)
+rowName    <- edata[,1]
+rownames(edata) <- rowName
+edata <- edata[,-1]
+colnames(edata) <- substr(colnames(edata),start=16,stop=23)
+edata <- as.data.frame(edata)
+```
 
 
 
