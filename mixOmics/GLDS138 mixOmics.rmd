@@ -147,16 +147,23 @@ GLDS138RNA = 'GLDS-138_rna_seq_Normalized_Counts.csv'
 download.file(file_url, GLDS138RNA)
 edata <- read.csv(GLDS138RNA, stringsAsFactors = FALSE)
 
-trop = RSkittleBrewer("tropical")
-palette(trop)
-par(pch=19)
-
 dim(edata)
-rowName    <- edata[,1]
+rowName <- edata[,1]
 rownames(edata) <- rowName
 edata <- edata[,-1]
 colnames(edata) <- substr(colnames(edata),start=16,stop=23)
 edata <- as.data.frame(edata)
+edata <- t(edata)
+
+# set up metabolomic data
+setwd("C:/Users/strki/Documents/Git_R/GLDS-138 metabolomics/GLDS-138-metabolomics/BsubFGP")
+mdata <- read.csv("GLDS138.BsubFGP.csv")
+mdata$Sample <- substr(mdata$Sample, start=1, stop = 9)
+rowName <- mdata[,1]
+rownames(mdata) <- rowName
+mdata <- mdata[,-1]
+mdata$Label <- substr(mdata$Label, start=8, stop = 14)
+mdat <- mdata[,-1]
 ```
 
 
