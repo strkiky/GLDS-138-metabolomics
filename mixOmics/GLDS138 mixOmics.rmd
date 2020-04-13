@@ -157,13 +157,14 @@ edata <- t(edata)
 
 # set up metabolomic data
 setwd("C:/Users/strki/Documents/Git_R/GLDS-138 metabolomics/GLDS-138-metabolomics/BsubFGP")
-mdata <- read.csv("GLDS138.BsubFGP.csv")
+mdata <- read.csv("GLDS138.BsubFGP.csv", check.names = FALSE)
 mdata$Sample <- substr(mdata$Sample, start=1, stop = 9)
 rowName <- mdata[,1]
 rownames(mdata) <- rowName
 mdata <- mdata[,-1]
 mdata$Label <- substr(mdata$Label, start=8, stop = 14)
 mdat <- mdata[,-1]
+setwd("C:/Users/strki/Documents/Git_R/GLDS-138 metabolomics/GLDS-138-metabolomics/mixOmics")
 ```
 ```{r}
 #quick start on PLS
@@ -180,8 +181,24 @@ plotIndiv(MyResult.spls, group = mdata$Label,
           legend.title = 'Treatment',
           title = 'Spaceflight Bacillus subtilis: sPLS')
 
+# Clustered image maps
+X11()
+cim(MyResult.spls, comp = 1)
 
+#Relevance networks
+X11()
+network(MyResult.spls, comp = 1, cutoff = 0.6, save = 'jpeg',name.save = 'PLS.network')
 
+# Arrow plots
+plotArrow(MyResult.spls,group=mdata$Label, legend = TRUE,
+          X.label = 'PLS comp 1', Y.label = 'PLS comp 2')
+# Short arrows indicate a good agreement found by the PLS between both data sets
+
+# Variable selection outputs
+MySelectedVariables <- selectVar(MyResult.spls, comp = 1)
+MySelectedVariables$X$name # Selected genes on component 1
+
+MySelectedVariables$Y$name # Selected lipids on component 1
 
 
 
