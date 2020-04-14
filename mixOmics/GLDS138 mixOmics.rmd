@@ -213,7 +213,7 @@ X <- list(RNA = edata,
 Y <- mdata$Label
 summary(Y)
 
-list.keepX <- list(RNA = c(16,17), metabolite = c(10,5))
+list.keepX <- list(RNA = c(10,5), metabolite = c(10,5))
 
 # quick start
 MyResult.diablo <- block.splsda(X, Y, keepX=list.keepX)
@@ -225,9 +225,7 @@ plotVar(MyResult.diablo, var.names = c(FALSE, TRUE),
         legend = TRUE, pch = c(16, 2))
 plotDiablo(MyResult.diablo, ncomp = 1)
 
-
-# does not work yet
-circosPlot(MyResult.diablo, cutoff = 0.7)
+circosPlot(MyResult.diablo, cutoff = 0.8, ncol.legend = 1, showIntraLinks = TRUE, line = TRUE, size.variables = 0.6)
 cimDiablo(MyResult.diablo, color.blocks = c('darkorchid', 'brown1'), comp = 1, margin=c(8,20), legend.position = "right")
 plotLoadings(MyResult.diablo, comp = 2, contrib = "max")
 
@@ -236,7 +234,7 @@ network(MyResult.diablo, blocks = c(1,2),
         color.node = c('darkorchid', 'brown1'), 
         cutoff = 0.6, save = 'jpeg', name.save = 'DIABLOnetwork')
 
-MyResult.diablo2 <- block.plsda(X, Y)
+MyResult.diablo2 <- block.plsda(X, Y) 
 ```
 
 
