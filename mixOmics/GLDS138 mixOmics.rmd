@@ -142,6 +142,7 @@ plotIndiv(MyResult.splsda.final, ind.names = FALSE, legend=TRUE,
 # Projection to Latent Structure (PLS)
 ```{r}
 # Set up transcriptomic data
+setwd("C:/Users/strki/Documents/Git_R/GLDS-138 metabolomics/GLDS-138-metabolomics/mixOmics")
 file_url <- "https://genelab-data.ndc.nasa.gov/genelab/static/media/dataset/GLDS-138_rna_seq_Normalized_Counts.csv?version=1"
 GLDS138RNA = 'GLDS-138_rna_seq_Normalized_Counts.csv'
 download.file(file_url, GLDS138RNA)
@@ -165,7 +166,14 @@ rownames(mdata) <- rowName
 mdata <- mdata[,-1]
 mdata$Label <- substr(mdata$Label, start=8, stop = 14)
 mdat <- mdata[,-1]
+mdat[,2:ncol(mdat)] <- autoscale(mdata.as[,2:ncol(mdat)]) # normalise
 setwd("C:/Users/strki/Documents/Git_R/GLDS-138 metabolomics/GLDS-138-metabolomics/mixOmics")
+
+# set up lipidomics data
+Ldata <- read.csv("GLDS138.Lipid.as.csv", row.names = 1, check.names = FALSE)
+Ldata <- Ldata[c(1:18),]
+Ldata <- Ldata[,-c(1:2)]
+
 ```
 ```{r}
 #quick start on PLS
@@ -199,7 +207,7 @@ plotArrow(MyResult.spls,group=mdata$Label, legend = TRUE,
 MySelectedVariables <- selectVar(MyResult.spls, comp = 1)
 MySelectedVariables$X$name # Selected genes on component 1
 
-MySelectedVariables$Y$name # Selected lipids on component 1
+MySelectedVariables$Y$name # Selected metabolites on component 1
 
 plotLoadings(MyResult.spls, comp = 1, size.name = rel(0.5))
 ```
@@ -207,13 +215,15 @@ plotLoadings(MyResult.spls, comp = 1, size.name = rel(0.5))
 ```{r}
 # build on the setup from the PLS
 rownames(mdat) <- rowNameE
+rownames(Ldata) <- rowNameE
 mdata$Label <- as.factor(mdata$Label)
 X <- list(RNA = edata,
-          metabolite = mdat)
+          metabolite = mdat,
+          lipid = Ldata)
 Y <- mdata$Label
 summary(Y)
 
-list.keepX <- list(RNA = c(10,5), metabolite = c(10,5))
+list.keepX <- list(RNA = c(10,5), metabolite = c(10,5), lipid = c(10,5))
 
 # quick start
 MyResult.diablo <- block.splsda(X, Y, keepX=list.keepX)
@@ -221,11 +231,11 @@ plotIndiv(MyResult.diablo,
           ind.names = FALSE,
           legend = TRUE, cex = c(1,2),
           title = "Spaceflight B. subtilis with DIABLO") ## sample plot
-plotVar(MyResult.diablo, var.names = c(FALSE, TRUE),
-        legend = TRUE, pch = c(16, 2))
+plotVar(MyResult.diablo, var.names = c(FALSE, TRUE, FALSE),
+        legend = TRUE, pch = c(16, 2, 2))
 plotDiablo(MyResult.diablo, ncomp = 1)
 
-circosPlot(MyResult.diablo, cutoff = 0.8, ncol.legend = 1, showIntraLinks = TRUE, line = TRUE, size.variables = 0.6)
+circosPlot(MyResult.diablo, cutoff = 0.9, ncol.legend = 1, showIntraLinks = TRUE, line = TRUE, size.variables = 0.6)
 cimDiablo(MyResult.diablo, color.blocks = c('darkorchid', 'brown1'), comp = 1, margin=c(8,20), legend.position = "right")
 plotLoadings(MyResult.diablo, comp = 2, contrib = "max")
 
