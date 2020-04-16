@@ -294,7 +294,42 @@ mSet<-PlotRF.Outlier(mSet, "rf_outlier_1_", "png", 72, width=NA)
 
 mSet<-SaveTransformedData(mSet)
 ```
-
+# B. subtilis (pellet) analysis with Enrichment analysis
+```{r}
+mSet<-InitDataObjects("conc", "msetora", FALSE)
+cmpd.vec<-c("ribonic acid","methionine","tryptophan","isothreonic acid","isocitric acid","pyruvic acid","isothreitol")
+mSet<-Setup.MapData(mSet, cmpd.vec);
+mSet<-CrossReferencing(mSet, "name");                # does not work at this point
+mSet<-CreateMappingResultTable(mSet)
+mSet<-PerformDetailMatch(mSet, "isothreonic acid");
+mSet<-GetCandidateList(mSet);
+mSet<-SetCandidate(mSet, "isothreonic acid", "Threonic acid");
+mSet<-PerformDetailMatch(mSet, "isothreitol");
+mSet<-GetCandidateList(mSet);
+mSet<-SetMetabolomeFilter(mSet, F);
+mSet<-SetCurrentMsetLib(mSet, "snp", 2);
+mSet<-CalculateHyperScore(mSet)
+mSet<-PlotORA(mSet, "ora_0_", "net", "png", 72, width=NA)
+mSet<-CalculateHyperScore(mSet)
+mSet<-PlotORA(mSet, "ora_1_", "net", "png", 72, width=NA)
+```
+# B. subtilis (pellet) analysis with Pathway Analysis
+```{r}
+mSet<-InitDataObjects("conc", "pathora", FALSE)
+cmpd.vec<-c("ribonic acid","methionine","tryptophan","isothreonic acid","isocitric acid","pyruvic acid","isothreitol")
+mSet<-Setup.MapData(mSet, cmpd.vec);
+mSet<-CrossReferencing(mSet, "name");                   # fails at this point again
+mSet<-CreateMappingResultTable(mSet)
+mSet<-PerformDetailMatch(mSet, "isothreonic acid");
+mSet<-GetCandidateList(mSet);
+mSet<-SetCandidate(mSet, "isothreonic acid", "Threonic acid");
+mSet<-PerformDetailMatch(mSet, "isothreitol");
+mSet<-GetCandidateList(mSet);
+mSet<-SetKEGG.PathLib(mSet, "bsu", "current")
+mSet<-SetMetabolomeFilter(mSet, F);
+mSet<-CalculateOraScore(mSet, "rbc", "hyperg")
+mSet<-PlotPathSummary(mSet, "path_view_0_", "png", 72, width=NA)
+```
 # ROC analysis with just pellet
 ```{r}
 rm(list = ls())
