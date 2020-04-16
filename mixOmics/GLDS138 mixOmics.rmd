@@ -166,12 +166,12 @@ rownames(mdata) <- rowName
 mdata <- mdata[,-1]
 mdata$Label <- substr(mdata$Label, start=8, stop = 14)
 mdat <- mdata[,-1]
-mdat[,2:ncol(mdat)] <- autoscale(mdata.as[,2:ncol(mdat)]) # normalise
+mdat[,2:ncol(mdat)] <- autoscale(mdat[,2:ncol(mdat)]) # normalise
 setwd("C:/Users/strki/Documents/Git_R/GLDS-138 metabolomics/GLDS-138-metabolomics/mixOmics")
 
 # set up lipidomics data
 Ldata <- read.csv("GLDS138.Lipid.as.csv", row.names = 1, check.names = FALSE)
-Ldata <- Ldata[c(1:18),]
+Ldata <- Ldata[c(19:36),]
 Ldata <- Ldata[,-c(1:2)]
 
 ```
@@ -231,7 +231,7 @@ plotIndiv(MyResult.diablo,
           ind.names = FALSE,
           legend = TRUE, cex = c(1,2),
           title = "Spaceflight B. subtilis with DIABLO") ## sample plot
-plotVar(MyResult.diablo, var.names = c(FALSE, TRUE, FALSE),
+plotVar(MyResult.diablo, var.names = c(FALSE, FALSE, TRUE),
         legend = TRUE, pch = c(16, 2, 2))
 plotDiablo(MyResult.diablo, ncomp = 1)
 
