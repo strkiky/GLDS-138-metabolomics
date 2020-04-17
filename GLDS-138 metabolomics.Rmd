@@ -133,15 +133,24 @@ Bsub.centre[,2:ncol(Bsub.centre)] <- centrescale(Bsub.prenorm[,2:ncol(Bsub.preno
 # Check on normality and assumptions
 ```{r}
 # Check on normalisation
-boxplot(Bsub.prenorm[,2:ncol(Bsub.prenorm[1:200])], col = 2, range = 0, las =2)
-boxplot(log2(Bsub.prenorm[,2:ncol(Bsub.prenorm[1:200])]+1), col = 2, range = 0)
-boxplot(Bsub.autoscale[,2:ncol(Bsub.autoscale[1:200])], col =2, range = 0, las = 2)
-boxplot(Bsub.range[,2:ncol(Bsub.range[1:200])], col =2, range = 0, las = 2)
-boxplot(Bsub.pareto[,2:ncol(Bsub.pareto[1:200])], col =2, range = 0, las = 2)
-boxplot(Bsub.level[,2:ncol(Bsub.level[1:200])], col =2, range = 0, las = 2)
-boxplot(Bsub.centre[,2:ncol(Bsub.centre[1:200])], col =2, range = 0, las = 2)
+p1 <- boxplot(Bsub.prenorm[,2:ncol(Bsub.prenorm[1:200])], col = 2, range = 0, las =2)
+p2 <- boxplot(log2(Bsub.prenorm[,2:ncol(Bsub.prenorm[1:200])]+1), col = 2, range = 0)
+p3 <- boxplot(Bsub.autoscale[,2:ncol(Bsub.autoscale[1:200])], col =2, range = 0, las = 2)
+p4 <- boxplot(Bsub.range[,2:ncol(Bsub.range[1:200])], col =2, range = 0, las = 2)
+p5 <- boxplot(Bsub.pareto[,2:ncol(Bsub.pareto[1:200])], col =2, range = 0, las = 2)
+p6 <- boxplot(Bsub.level[,2:ncol(Bsub.level[1:200])], col =2, range = 0, las = 2)
+p6 <- boxplot(Bsub.centre[,2:ncol(Bsub.centre[1:200])], col =2, range = 0, las = 2)
 boxplot(Bsub.prenorm[,2:ncol(Bsub.prenorm[1:200])], col = 2, range = 0, center = TRUE)
 
+par(mfrow=c(2,1))
+boxplot(p1$stats, ylab = "prenorm", las = 2, xaxt = 'n')
+boxplot(p2$stats, ylab = "log2", las = 2, xaxt = 'n')
+boxplot(p3$stats, ylab = "autoscale", las = 2, xaxt = 'n')
+boxplot(p4$stats, ylab = "range scale", las = 2, xaxt = 'n')
+boxplot(p5$stats, ylab = "level scale", las = 2, xaxt = 'n')
+boxplot(p6$stats, ylab = "centre scale", las = 2, xaxt = 'n')
+
+par(mfrow=c(1,1))
 # autoscale seems most suitable
 
 plot(density(Bsub.prenorm[,2]),col=2)
