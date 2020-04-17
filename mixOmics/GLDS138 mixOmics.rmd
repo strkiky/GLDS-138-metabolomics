@@ -86,7 +86,7 @@ plotVar(MyResult.plsda, cutoff = 0.7)
 # sPLS-DA
 MyResult.splsda <- splsda(X, Y, keepX = c(60,60))
 plotIndiv(MyResult.splsda, ind.names = FALSE, legend = TRUE,
-          ellipse = TRUE, star = TRUE, title = 'sPLS-DA on BsubFG.as',
+          ellipse = TRUE, star = TRUE, title = 'Spaceflight B. subtilis: sPLS-DA',
           X.label = 'PLS-DA 1', Y.label = 'PLS-DA 2')
 plotVar(MyResult.splsda)
 selectVar(MyResult.splsda, comp = 1)$name
