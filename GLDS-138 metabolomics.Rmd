@@ -299,7 +299,7 @@ BsubFG.as <- Bsub.autoscale[-c(1:8, 27:34),]
 BsubPCA.as <- BsubFG.as[,-1]
 BsubPCA.as <- as.data.frame.matrix(BsubPCA.as)
 
-pca <- prcomp(BsubPCA.as, retx = TRUE, center = FALSE, scale = FALSE)
+pca <- prcomp(BsubPCA.as, retx = TRUE, center = TRUE, scale = FALSE)
 pcaresults <- summary(pca)
 pca.var <- pca$sdev^2
 pca.var.per <- round(pca.var/sum(pca.var)*100, 1)
