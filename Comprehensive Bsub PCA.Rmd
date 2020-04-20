@@ -82,22 +82,33 @@ GLDS138.as[,4:ncol(GLDS138.as)] <- autoscale(GLDS138.as[,4:ncol(GLDS138.as)])
 
 write.csv(GLDS138.as,"GLDS138.as.csv", row.names = F)
 ```
-# Start 
+# Additional setups 
 ```{r}
 GLDS138.as <- read.csv("GLDS138.as.csv", check.names = FALSE, header = TRUE, row.names = 1)
 utils::View(GLDS138.as)
 
-X <- GLDS138.as[,3:ncol(GLDS138.as)]
+# Just B. subtilis
+Bsub.as <- GLDS138.as[c(1:52),]
+Bsub.as <- Bsub.as[,-2]
 
+# Get rid of Control ASAP and Frozen - so just media and pellet
+BsubMP <- Bsub.as[-c(1:8, 27:34),]
 
+# Just Pellet - the bacteria - comparison of just flight vs ground
+BsubFG <- BsubMP[c(19:36),]
+BsubFG$Label <- gsub("Pellet ", "", BsubFG$Label)
 
 ```
 # Start analysis
 ```{r}
+X <- GLDS138.as[,3:ncol(GLDS138.as)]
 # Quick Plots
 MyResult.pca <- pca(X, ncomp = 3)
 plotIndiv(MyResult.pca, group = BsubFG.as$Label, ellipse = TRUE, style = "lattice", legend = TRUE, ind.names = FALSE, comp = c(1,2))
 plotVar(MyResult.pca)
+
+
+
 ```
 
 
