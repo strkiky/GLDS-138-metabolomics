@@ -13,7 +13,7 @@ knitr::opts_chunk$set(echo = TRUE)
 # Initial set up
 ```{r}
 rm(list = ls())
-setwd("C:/Users/strki/Documents/Git_R/GLDS-138 metabolomics/GLDS-138-metabolomics")
+setwd("C:/Users/strki/Documents/Git_R/GLDS-138 metabolomics/GLDS-138-metabolomics/Compre Bsub PCA")
 
 # Same dataset as B. subtilis, so no download require
 Bdata <- read.csv("GLDS-138_metabolomics_mx 367428_NASA_bacteria cells_09-2017_submit.csv", stringsAsFactors = FALSE)
