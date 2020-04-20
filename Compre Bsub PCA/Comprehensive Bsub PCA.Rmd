@@ -82,7 +82,7 @@ GLDS138.as[,4:ncol(GLDS138.as)] <- autoscale(GLDS138.as[,4:ncol(GLDS138.as)])
 
 write.csv(GLDS138.as,"GLDS138.as.csv", row.names = F)
 ```
-# Cpmparison setups 
+# Comparison setups 
 ```{r}
 GLDS138.as <- read.csv("GLDS138.as.csv", check.names = FALSE, header = TRUE)
 utils::View(GLDS138.as)
@@ -143,6 +143,9 @@ MyResult.pca <- pca(X, ncomp = 4, center = TRUE)
 plotIndiv(MyResult.pca, comp = c(1,2), legend = TRUE, title = 'B. subtilis - Flight vs Ground: PCA',
           group = BsubFG$Label, legend.title = 'Treatment',
           ellipse = TRUE, style = "ggplot2", ind.names = FALSE)
+plotIndiv(MyResult.pca, comp = c(1,2,3), legend = TRUE, title = 'B. subtilis - Flight vs Ground: PCA',
+          group = BsubFG$Label, legend.title = 'Treatment',
+          ellipse = TRUE, style = "3d", ind.names = FALSE)
 plotVar(MyResult.pca, cutoff = 0.8)
 MyResult.pca #18,15,11,11
 
@@ -259,6 +262,36 @@ mSet<-RF.Anal(mSet, 1000,7,1)
 mSet<-PlotRF.Classify(mSet, "rf_cls_1_", "png", 72, width=NA)
 mSet<-PlotRF.VIP(mSet, "rf_imp_1_", "png", 72, width=NA)
 mSet<-PlotRF.Outlier(mSet, "rf_outlier_1_", "png", 72, width=NA)
+
+# Enrichment analysis
+mSet<-InitDataObjects("conc", "msetora", FALSE)
+cmpd.vec<-c("ribonic acid","isothreonic acid","isocitric acid","pyruvic acid","tryptophan","methionine")
+mSet<-Setup.MapData(mSet, cmpd.vec);
+mSet<-CrossReferencing(mSet, "name");
+mSet<-CreateMappingResultTable(mSet)
+mSet<-PerformDetailMatch(mSet, "isothreonic acid");
+mSet<-GetCandidateList(mSet);
+mSet<-SetCandidate(mSet, "isothreonic acid", "Threonic acid");
+mSet<-SetMetabolomeFilter(mSet, F);
+mSet<-SetCurrentMsetLib(mSet, "snp", 2);
+mSet<-CalculateHyperScore(mSet)
+mSet<-PlotORA(mSet, "ora_0_", "net", "png", 72, width=NA)
+mSet<-CalculateHyperScore(mSet)
+mSet<-PlotORA(mSet, "ora_1_", "net", "png", 72, width=NA)
+
+# Pathway Analysis
+mSet<-InitDataObjects("conc", "pathora", FALSE)
+cmpd.vec<-c("ribonic acid","isothreonic acid","isocitric acid","pyruvic acid","tryptophan","methionine")
+mSet<-Setup.MapData(mSet, cmpd.vec);
+mSet<-CrossReferencing(mSet, "name");
+mSet<-CreateMappingResultTable(mSet)
+mSet<-PerformDetailMatch(mSet, "isothreonic acid");
+mSet<-GetCandidateList(mSet);
+mSet<-SetCandidate(mSet, "isothreonic acid", "Threonic acid");
+mSet<-SetKEGG.PathLib(mSet, "bsu", "current")
+mSet<-SetMetabolomeFilter(mSet, F);
+mSet<-CalculateOraScore(mSet, "rbc", "hyperg")
+mSet<-PlotPathSummary(mSet, "path_view_0_", "png", 72, width=NA)
 ```
 
 
