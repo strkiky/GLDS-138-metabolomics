@@ -1,0 +1,126 @@
+---
+title: "Bsub PCA"
+author: "Yen-Kai Chen"
+date: "20/04/2020"
+output: word_document
+editor_options: 
+  chunk_output_type: console
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+# creating the required file
+```{r}
+rm(list = ls())
+setwd("C:/Users/strki/Documents/Git_R/GLDS-138 metabolomics/GLDS-138-metabolomics")
+
+# file already downloaded
+Bdata <- read.csv("GLDS-138_metabolomics_mx 367428_NASA_bacteria cells_09-2017_submit.csv", stringsAsFactors = FALSE)
+
+# filtering data for MetaboAnalyst (Samples in rows (unpaired))
+Bdata <- t(Bdata)
+Bdata <- Bdata[-c(2:7, 114:118),]
+Bdata <- Bdata[,-c(1:2,6:8)]
+Bdata[1,1:3] <- Bdata[2,1:3]
+Bdata <- Bdata[-c(2),]
+
+rownames(Bdata) <- NULL
+
+Bdata[1,1] <- "Sample"   # renaming to suit MetaboAnalyst
+Bdata[1,2] <- "Label"
+
+# Giving column and row names
+columnName <- Bdata[1,]
+colnames(Bdata) <- columnName
+Bdata <- Bdata[-1,]
+Bdata <- as.data.frame(Bdata)
+
+# as.numeric
+Bdata[,4:ncol(Bdata)] <- lapply(Bdata[,4:ncol(Bdata)], function(x) as.numeric(as.character(x)))
+
+# Row-wise correction
+BdataRWC <- as.data.frame(Bdata)
+rowi <- BdataRWC[,4:ncol(BdataRWC)]
+
+BdataRWC[,4:ncol(BdataRWC)] <- rowi / rowSums(rowi) # by the peak of all sums
+
+sum(BdataRWC[105,4:ncol(BdataRWC)]) # checking the row wise correction worked well
+
+# Baseline correction
+tail(BdataRWC[,1:5], 1)
+
+blc <- tail(BdataRWC,1)
+tail(blc[,1:5],1)
+BdataRWC1 <- BdataRWC[-nrow(BdataRWC),]
+BdataBLC <- BdataRWC1 # creating an intermediate step so no rows are accidentally deleted
+
+BdataBLC[,4:ncol(BdataBLC)] <- BdataBLC[,4:ncol(BdataBLC)] - blc[rep(1,104),4:ncol(blc)]
+
+# xylose <- BdataRWC1[1,4] - blc[,4] # double check that the values are correct
+# mb39 <- BdataRWC1[104,715] - blc[,715]
+
+# Create the general dataset
+GLDS138 <- BdataBLC
+
+GLDS138$Label <- gsub("B. subtilis", "", GLDS138$Label)
+GLDS138$Label <- gsub("S. aureus", "", GLDS138$Label)
+GLDS138$Label <- gsub("S. Aureus", "", GLDS138$Label)
+
+# autoscale function
+autoscale <- function(a){
+  colmean <- apply(a,2,mean) # column mean
+  colsd <- apply(a, 2, sd) # col standard deviation
+  cv <- sweep(a, 2, colmean, "-") # minus mean center
+  cv <- sweep(cv, 2, colsd, "/") # divide by sd
+  return(cv)
+}
+
+# Normalise
+GLDS138.as <- GLDS138
+GLDS138.as[,4:ncol(GLDS138.as)] <- autoscale(GLDS138.as[,4:ncol(GLDS138.as)])
+
+write.csv(GLDS138.as,"GLDS138.as.csv", row.names = F)
+```
+# Start 
+```{r}
+GLDS138.as <- read.csv("GLDS138.as.csv", check.names = FALSE, header = TRUE, row.names = 1)
+utils::View(GLDS138.as)
+
+X <- GLDS138.as[,3:ncol(GLDS138.as)]
+
+
+
+```
+# Start analysis
+```{r}
+# Quick Plots
+MyResult.pca <- pca(X, ncomp = 3)
+plotIndiv(MyResult.pca, group = BsubFG.as$Label, ellipse = TRUE, style = "lattice", legend = TRUE, ind.names = FALSE, comp = c(1,2))
+plotVar(MyResult.pca)
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+```{r}
+devtools::session_info()
+```
