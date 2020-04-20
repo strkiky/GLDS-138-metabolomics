@@ -98,6 +98,7 @@ BsubMP$Label <- factor(BsubMP$Label)
 # Just Pellet - the bacteria - comparison of just flight vs ground
 BsubFG <- BsubMP[c(19:36),]
 BsubFG$Label <- gsub("Pellet ", "", BsubFG$Label)
+write.csv(BsubFG,"GLDS138.BsubFG.as.csv", row.names = F) # used later for metaboanalyst
 
 # Just Media consumed by the bacteria - F vs G
 BsubMd <- BsubMP[c(1:18),]
@@ -217,7 +218,6 @@ plotVar(MyResult.spca, cex = 3)
 # MetaboAnalyst
 ```{r}
 library(MetaboAnalystR)
-write.csv(BsubFG,"GLDS138.BsubFG.as.csv", row.names = F)
 
 # set up
 mSet<-InitDataObjects("pktable", "stat", FALSE)
