@@ -174,15 +174,6 @@ MyResult.pca$rotation[top_10_metab,1]
 ```
 # sPCA
 ```{r}
-# the general file
-X <- GLDS138.as[,4:ncol(GLDS138.as)]
-MyResult.spca <- spca(X, ncomp = 3, center = TRUE, keepX = c(17,10,5))
-plotIndiv(MyResult.spca, comp = c(1,2), legend = TRUE, title = 'GLDS138: sPCA',
-          group = GLDS138.as$Label, legend.title = 'Treatment',
-          ellipse = FALSE, style = "ggplot2", ind.names = FALSE, 
-          pch = GLDS138.as$species, legend.title.pch = 'Species')
-plotVar(MyResult.spca, cex = 3)
-
 # B subtilis
 X <- Bsub.as[,3:ncol(Bsub.as)]
 MyResult.spca <- spca(X, ncomp = 3, center = TRUE, keepX = c(16,14,5))
@@ -217,6 +208,7 @@ plotVar(MyResult.spca, cex = 3)
 ```
 # MetaboAnalyst
 ```{r}
+setwd("C:/Users/strki/Documents/Git_R/GLDS-138 metabolomics/GLDS-138-metabolomics/Compre Bsub PCA")
 library(MetaboAnalystR)
 
 # set up
@@ -225,7 +217,7 @@ mSet<-Read.TextData(mSet, "GLDS138.BsubFG.as.csv", "rowu", "disc");
 mSet<-SanityCheckData(mSet)
 mSet<-ReplaceMin(mSet);
 mSet<-PreparePrenormData(mSet)
-mSet<-Normalization(mSet, "NULL", "NULL", "AutoNorm", ratio=FALSE, ratioNum=20)
+mSet<-Normalization(mSet, "NULL", "NULL", "NULL", ratio=FALSE, ratioNum=20)
 mSet<-PlotNormSummary(mSet, "norm_0_", "png", 72, width=NA)
 mSet<-PlotSampleNormSummary(mSet, "snorm_0_", "png", 72, width=NA)
 
@@ -254,17 +246,6 @@ mSet<-PlotPCALoading(mSet, "pca_loading_0_", "png", 72, width=NA, 1,2);
 mSet<-PlotPCABiplot(mSet, "pca_biplot_0_", "png", 102, width=NA, 1,2)
 mSet<-PlotPCA3DLoading(mSet, "pca_loading3d_0_", "json", 1,2,3)
 
-# PLS-DA
-mSet<-PLSR.Anal(mSet, reg=TRUE)
-mSet<-PlotPLSPairSummary(mSet, "pls_pair_0_", "png", 72, width=NA, 5)
-mSet<-PlotPLS2DScore(mSet, "pls_score2d_0_", "png", 72, width=NA, 1,2,0.95,0,0)
-mSet<-PlotPLS3DScoreImg(mSet, "pls_score3d_0_", "png", 72, width=NA, 1,2,3, 40)
-mSet<-PlotPLSLoading(mSet, "pls_loading_0_", "png", 72, width=NA, 1, 2);
-mSet<-PlotPLS3DLoading(mSet, "pls_loading3d_0_", "json", 1,2,3)
-mSet<-PLSDA.CV(mSet, "L",4, "Q2")
-mSet<-PlotPLS.Classification(mSet, "pls_cv_0_", "png", 72, width=NA)
-mSet<-PlotPLS.Imp(mSet, "pls_imp_0_", "png", 72, width=NA, "vip", "Comp. 1", 15,FALSE)
-
 # Hierarchical Clustering
 mSet<-PlotHCTree(mSet, "tree_0_", "png", 72, width=NA, "euclidean", "ward.D")
 mSet<-PlotHeatMap(mSet, "heatmap_0_", "png", 300, width=NA, "norm", "row", "euclidean", "ward.D","bwm", "overview", T, T, NA, T, F)
@@ -278,8 +259,6 @@ mSet<-RF.Anal(mSet, 1000,7,1)
 mSet<-PlotRF.Classify(mSet, "rf_cls_1_", "png", 72, width=NA)
 mSet<-PlotRF.VIP(mSet, "rf_imp_1_", "png", 72, width=NA)
 mSet<-PlotRF.Outlier(mSet, "rf_outlier_1_", "png", 72, width=NA)
-
-mSet<-SaveTransformedData(mSet)
 ```
 
 
