@@ -1,0 +1,153 @@
+---
+title: "Processing GLDS138 lipidomics"
+author: "Yen-Kai Chen"
+date: "20/04/2020"
+output: word_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+```{r}
+setwd("C:/Users/strki/Documents/Git_R/GLDS-138 metabolomics/GLDS-138-metabolomics/mixOmics")
+# download data
+file_url <- "https://genelab-data.ndc.nasa.gov/genelab/static/media/dataset/GLDS-138_metabolomics_mx%20340473_349158_CSH-QTOF%20MSMS_lipidomics_09-2017_submit.csv?version=1"
+BRIC23lipid = 'GLDS-138_metabolomics_mx 340473_349158_CSH-QTOF MSMS_lipidomics_09-2017_submit.csv'
+download.file(file_url, BRIC23lipid)
+Ldata <- read.csv(BRIC23lipid, stringsAsFactors = FALSE)
+
+Ldata <- t(Ldata)
+rowName <- Ldata[,7]
+rownames(Ldata)[1:7] <- rowName[1:7]
+Ldata <- Ldata[-c(1,3:4,6:7),]
+Ldata[1,1:6] <- Ldata[3,1:6]
+Ldata <- Ldata[,-c(1,5:7)]
+colName <- Ldata[1,]
+colnames(Ldata) <- colName
+Ldata <- Ldata[-c(1:3),]
+Ldata <- as.data.frame(Ldata) # needed to prevent a list from being created
+dim(Ldata)
+
+Ldata[,4:ncol(Ldata)] <- lapply(Ldata[,4:ncol(Ldata)], function(x) as.numeric(as.character(x)))
+min(Ldata[,4:ncol(Ldata)], na.rm=T)
+Ldata[,4:ncol(Ldata)][is.na(Ldata[,4:ncol(Ldata)])] <- 0.00000001 # give NAs a very low value
+min(Ldata[,4:ncol(Ldata)])
+
+Ldata$Label <- paste(Ldata$Organ,Ldata$Treatment,sep=" ") 
+Ldata <- Ldata[,c("Label", names(Ldata)[-2096])]
+Ldata <- Ldata[,-c(3:4)]
+Ldata$Label <- as.factor(Ldata$Label)
+```
+#preprocessing
+
+```{r}
+# Row-wise correction
+LdataRWC <- as.data.frame(Ldata)
+rowi <- LdataRWC[,3:ncol(LdataRWC)]
+
+LdataRWC[,3:ncol(LdataRWC)] <- rowi / rowSums(rowi) # by the peak of all sums
+
+sum(LdataRWC[105,3:ncol(LdataRWC)]) # checking the row wise correction worked well
+
+# Baseline correction - with the TSY_blank
+blc <- LdataRWC[49,]
+tail(blc[,1:5])
+LdataBLC <- LdataRWC[-c(49),]
+
+LdataBLC[,3:ncol(LdataBLC)] <- LdataBLC[,3:ncol(LdataBLC)] - blc[rep(1,116),3:ncol(blc)]
+
+# relabelling
+LdataBLC$Label <- gsub("Med Flight ", "Med Flight", LdataBLC$Label)
+LdataBLC$Species <- gsub("B.subtilis", "B. subtilis", LdataBLC$Species)
+LdataBLC$Species <- gsub("S.aureus", "S. aureus", LdataBLC$Species)
+LdataBLC$Species <- gsub("S.Aureus", "S. aureus", LdataBLC$Species)
+
+utils::View(LdataBLC)
+
+write.csv(LdataBLC,"GLDS138.Lipid.csv")
+```
+# Pretreatment: normalisation
+```{r}
+library(mixOmics)
+GLDS138.Lipid <- read.csv("GLDS138.Lipid.csv", row.names = 1, check.names = FALSE)
+
+# set up scales for normalisation
+autoscale <- function(a){
+  colmean <- apply(a,2,mean) # column mean
+  colsd <- apply(a, 2, sd) # col standard deviation
+  cv <- sweep(a, 2, colmean, "-") # minus mean center
+  cv <- sweep(cv, 2, colsd, "/") # divide by sd
+  return(cv)
+}
+
+rangescale <- function(r) {
+  apply(r, 2, function(x) (x  - mean(x))/(max(x) - min(x)))
+}
+
+paretoscale <- function(p){
+  colmean <- apply(p,2,mean) 
+  colsd <- apply(p, 2, sd) 
+  colsqrtsd <- sqrt(colsd)
+  cv <- sweep(p, 2, colmean, "-") 
+  cv <- sweep(cv, 2, colsqrtsd, "/") 
+  return(cv)
+}
+
+# Normalise
+GLDS138.Lipid.as <- GLDS138.Lipid
+GLDS138.Lipid.rs <- GLDS138.Lipid
+GLDS138.Lipid.ps <- GLDS138.Lipid
+GLDS138.Lipid.as[,3:ncol(GLDS138.Lipid.as)] <- autoscale(GLDS138.Lipid.as[,3:ncol(GLDS138.Lipid.as)])
+GLDS138.Lipid.rs[,3:ncol(GLDS138.Lipid.rs)] <- autoscale(GLDS138.Lipid.rs[,3:ncol(GLDS138.Lipid.rs)])
+GLDS138.Lipid.ps[,3:ncol(GLDS138.Lipid.ps)] <- autoscale(GLDS138.Lipid.ps[,3:ncol(GLDS138.Lipid.ps)])
+
+boxplot(GLDS138.Lipid[,3:ncol(GLDS138.Lipid[1:200])], col = 2, range = 0, las =2)
+boxplot(log2(GLDS138.Lipid[,3:ncol(GLDS138.Lipid[1:200])]+1), col = 2)
+boxplot(GLDS138.Lipid.as[,3:ncol(GLDS138.Lipid.as[1:200])], col = 2, range = 0, las =2)
+boxplot(GLDS138.Lipid.rs[,3:ncol(GLDS138.Lipid.rs[1:200])], col =2, range = 0, las = 2)
+boxplot(GLDS138.Lipid.ps[,3:ncol(GLDS138.Lipid.ps[1:200])], col =2, range = 0, las = 2)
+boxplot(log2(GLDS138.Lipid.as[,3:ncol(GLDS138.Lipid.as[1:200])]+1), col = 2, las =2)
+
+# final normalisation - turns out human plasma screwed the others up
+GLDS138.Lipid.as2 <- as.data.frame(GLDS138.Lipid[-c(1:12),]) # get rid of plasma
+GLDS138.Lipid.as2$Label <- factor(GLDS138.Lipid.as2$Label) # needed to get rid of remnant factors
+GLDS138.Lipid.as2$Species <- factor(GLDS138.Lipid.as2$Species)
+GLDS138.Lipid.as2[,3:ncol(GLDS138.Lipid.as2)] <- autoscale(GLDS138.Lipid.as2[,3:ncol(GLDS138.Lipid.as2)])
+boxplot(GLDS138.Lipid.as2[,3:ncol(GLDS138.Lipid.as2[1:200])], col = 2, range = 0, las = 2)
+
+X <- GLDS138.Lipid.as2[,3:ncol(GLDS138.Lipid.as2)]
+MyResult.pca <- pca(X, ncomp = 3)
+plotIndiv(MyResult.pca, title = 'Spaceflight vs Ground: PCA',
+          group = GLDS138.Lipid.as2$Label, legend = TRUE, legend.title = 'Treatment',
+          pch = GLDS138.Lipid.as2$Species, legend.title.pch = 'Species',
+          style = "ggplot2", ind.names = FALSE,
+          ellipse = TRUE, comp = c(1,2))
+
+write.csv(GLDS138.Lipid.as2,"GLDS138.Lipid.as.csv")
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+```{r}
+devtools::session_info()
+```
