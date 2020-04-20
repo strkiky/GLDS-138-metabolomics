@@ -109,7 +109,7 @@ BsubMd$Label <- gsub("Media ", "", BsubMd$Label)
 library(mixOmics)
 # the general file
 X <- GLDS138.as[,3:ncol(GLDS138.as)]
-MyResult.pca <- pca(X, ncomp = 3)
+MyResult.pca <- pca(X, ncomp = 3, scale = TRUE)
 plotIndiv(MyResult.pca, comp = c(1,2), legend = TRUE, title = 'GLDS138: PCA',
           group = GLDS138.as$Label, legend.title = 'Treatment',
           ellipse = FALSE, style = "ggplot2", ind.names = FALSE, 
@@ -119,7 +119,7 @@ plotVar(MyResult.pca, cutoff = 0.8)
 
 # B subtilis
 X <- Bsub.as[,2:ncol(Bsub.as)]
-MyResult.pca <- pca(X, ncomp = 3)
+MyResult.pca <- pca(X, ncomp = 3, scale = TRUE)
 plotIndiv(MyResult.pca, comp = c(1,2), legend = TRUE, title = 'B. subtilis: PCA',
           group = Bsub.as$Label, legend.title = 'Treatment',
           ellipse = TRUE, style = "ggplot2", ind.names = FALSE)
@@ -127,7 +127,7 @@ plotVar(MyResult.pca, cutoff = 0.8)
 
 # Media and pellet
 X <- BsubMP[,2:ncol(BsubMP)]
-MyResult.pca <- pca(X, ncomp = 3)
+MyResult.pca <- pca(X, ncomp = 3, scale = TRUE)
 plotIndiv(MyResult.pca, comp = c(1,2), legend = TRUE, title = 'B. subtilis - Media vs Pellet: PCA',
           group = BsubMP$Label, legend.title = 'Treatment',
           ellipse = TRUE, style = "ggplot2", ind.names = FALSE)
@@ -135,7 +135,7 @@ plotVar(MyResult.pca, cutoff = 0.8)
 
 # Pellet - Flight vs Ground
 X <- BsubFG[,2:ncol(BsubFG)]
-MyResult.pca <- pca(X, ncomp = 3)
+MyResult.pca <- pca(X, ncomp = 3, scale = TRUE)
 plotIndiv(MyResult.pca, comp = c(1,2), legend = TRUE, title = 'B. subtilis - Flight vs Ground: PCA',
           group = BsubFG$Label, legend.title = 'Treatment',
           ellipse = TRUE, style = "ggplot2", ind.names = FALSE)
@@ -143,13 +143,77 @@ plotVar(MyResult.pca, cutoff = 0.8)
 
 # Media - Flight vs Ground
 X <- BsubMd[,2:ncol(BsubMd)]
-MyResult.pca <- pca(X, ncomp = 3)
+MyResult.pca <- pca(X, ncomp = 3, scale = TRUE)
 plotIndiv(MyResult.pca, comp = c(1,2), legend = TRUE, title = 'B. subtilis consumed media - Flight vs Ground: PCA',
           group = BsubMd$Label, legend.title = 'Treatment',
           ellipse = TRUE, style = "ggplot2", ind.names = FALSE)
 plotVar(MyResult.pca, cutoff = 0.8)
 plotVar(MyResult.pca, cutoff = 0.5)
+```
+# sPCA
+```{r}
+# the general file
+X <- GLDS138.as[,3:ncol(GLDS138.as)]
+MyResult.spca <- pca(X, ncomp = 3, scale = TRUE)
+plotIndiv(MyResult.pca, comp = c(1,2), legend = TRUE, title = 'GLDS138: PCA',
+          group = GLDS138.as$Label, legend.title = 'Treatment',
+          ellipse = FALSE, style = "ggplot2", ind.names = FALSE, 
+          pch = GLDS138.as$species, legend.title.pch = 'Species')
+plotVar(MyResult.pca)
+plotVar(MyResult.pca, cutoff = 0.8)
 
+# B subtilis
+X <- Bsub.as[,2:ncol(Bsub.as)]
+MyResult.pca <- pca(X, ncomp = 3, scale = TRUE)
+plotIndiv(MyResult.pca, comp = c(1,2), legend = TRUE, title = 'B. subtilis: PCA',
+          group = Bsub.as$Label, legend.title = 'Treatment',
+          ellipse = TRUE, style = "ggplot2", ind.names = FALSE)
+plotVar(MyResult.pca, cutoff = 0.8)
+
+# Media and pellet
+X <- BsubMP[,2:ncol(BsubMP)]
+MyResult.pca <- pca(X, ncomp = 3, scale = TRUE)
+plotIndiv(MyResult.pca, comp = c(1,2), legend = TRUE, title = 'B. subtilis - Media vs Pellet: PCA',
+          group = BsubMP$Label, legend.title = 'Treatment',
+          ellipse = TRUE, style = "ggplot2", ind.names = FALSE)
+plotVar(MyResult.pca, cutoff = 0.8)
+
+# Pellet - Flight vs Ground
+X <- BsubFG[,2:ncol(BsubFG)]
+MyResult.pca <- pca(X, ncomp = 3, scale = TRUE)
+plotIndiv(MyResult.pca, comp = c(1,2), legend = TRUE, title = 'B. subtilis - Flight vs Ground: PCA',
+          group = BsubFG$Label, legend.title = 'Treatment',
+          ellipse = TRUE, style = "ggplot2", ind.names = FALSE)
+plotVar(MyResult.pca, cutoff = 0.8)
+
+# Media - Flight vs Ground
+X <- BsubMd[,2:ncol(BsubMd)]
+MyResult.pca <- pca(X, ncomp = 3, scale = TRUE)
+plotIndiv(MyResult.pca, comp = c(1,2), legend = TRUE, title = 'B. subtilis consumed media - Flight vs Ground: PCA',
+          group = BsubMd$Label, legend.title = 'Treatment',
+          ellipse = TRUE, style = "ggplot2", ind.names = FALSE)
+plotVar(MyResult.pca, cutoff = 0.8)
+
+# top metabolites of PC1
+metab_scores <- abs(MyResult.pca$rotation[,1])
+metab_score_ranked <- sort(metab_scores, decreasing = TRUE)
+top_10_metab <- names(metab_score_ranked[1:10])
+MyResult.pca$rotation[top_10_metab,1]
+
+top_10_metab <- names(sort(abs(MyResult.pca$rotation[,1]), decreasing = TRUE)[1:10])
+MyResult.pca$rotation[top_10_metab,1]
+
+# top metabolites for PC2
+metab_scores <- abs(MyResult.pca$rotation[,2])
+metab_score_ranked <- sort(metab_scores, decreasing = TRUE)
+top_10_metab <- names(metab_score_ranked[1:10])
+MyResult.pca$rotation[top_10_metab,1]
+
+# top metabolites for PC3
+metab_scores <- abs(MyResult.pca$rotation[,3])
+metab_score_ranked <- sort(metab_scores, decreasing = TRUE)
+top_10_metab <- names(metab_score_ranked[1:10])
+MyResult.pca$rotation[top_10_metab,1]
 
 ```
 
@@ -159,7 +223,9 @@ plotVar(MyResult.pca, cutoff = 0.5)
 
 
 
+```{r}
 
+```
 
 
 
