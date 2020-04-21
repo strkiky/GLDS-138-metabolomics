@@ -253,6 +253,17 @@ mSet<-PlotPCA3DLoading(mSet, "pca_loading3d_0_", "json", 1,2,3)
 mSet<-PlotHCTree(mSet, "tree_0_", "png", 72, width=NA, "euclidean", "ward.D")
 mSet<-PlotHeatMap(mSet, "heatmap_0_", "png", 300, width=NA, "norm", "row", "euclidean", "ward.D","bwm", "overview", T, T, NA, T, F)
 
+# PLS-DA
+mSet<-PLSR.Anal(mSet, reg=TRUE)
+mSet<-PlotPLSPairSummary(mSet, "pls_pair_0_", "png", 72, width=NA, 5)
+mSet<-PlotPLS2DScore(mSet, "pls_score2d_0_", "png", 72, width=NA, 1,2,0.95,0,0)
+mSet<-PlotPLS3DScoreImg(mSet, "pls_score3d_0_", "png", 72, width=NA, 1,2,3, 40)
+mSet<-PlotPLSLoading(mSet, "pls_loading_0_", "png", 72, width=NA, 1, 2);
+mSet<-PlotPLS3DLoading(mSet, "pls_loading3d_0_", "json", 1,2,3)
+mSet<-PLSDA.CV(mSet, "L",4, "Q2")
+mSet<-PlotPLS.Classification(mSet, "pls_cv_0_", "png", 72, width=NA)
+mSet<-PlotPLS.Imp(mSet, "pls_imp_0_", "png", 72, width=NA, "vip", "Comp. 1", 15,FALSE)
+
 #Kmeans
 mSet<-Kmeans.Anal(mSet, 4)
 mSet<-PlotKmeans(mSet, "km_1_", "png", 150, width=NA)
@@ -293,7 +304,71 @@ mSet<-SetMetabolomeFilter(mSet, F);
 mSet<-CalculateOraScore(mSet, "rbc", "hyperg")
 mSet<-PlotPathSummary(mSet, "path_view_0_", "png", 72, width=NA)
 ```
+# Set up for Multi-omics
+```{r}
+# Set up transcriptomic data
+setwd("C:/Users/strki/Documents/Git_R/GLDS-138 metabolomics/GLDS-138-metabolomics/Compre Bsub PCA")
+file_url <- "https://genelab-data.ndc.nasa.gov/genelab/static/media/dataset/GLDS-138_rna_seq_Normalized_Counts.csv?version=1"
+GLDS138RNA = 'GLDS-138_rna_seq_Normalized_Counts.csv'
+download.file(file_url, GLDS138RNA)
+edata <- read.csv(GLDS138RNA, stringsAsFactors = FALSE)
 
+dim(edata)
+rowName <- edata[,1]
+rownames(edata) <- rowName
+edata <- edata[,-1]
+colnames(edata) <- substr(colnames(edata),start=16,stop=23)
+edata <- as.data.frame(edata)
+edata <- t(edata)
+rowNameE <- rownames(edata)
+
+# set up metabolomic data
+mdat <- BsubFG[,-c(1:2)]
+rownames(mdat) <- rowNameE
+# mdata$Label <- as.factor(mdata$Label)
+
+# set up lipidomics data
+Ldata <- read.csv("GLDS138.Lipid.as.csv", row.names = 1, check.names = FALSE)
+Ldata <- Ldata[c(19:36),]
+Ldata <- Ldata[,-c(1:2)]
+rownames(Ldata) <- rowNameE
+
+
+```
+# Multi-block Discriminant Analysis with DIABLO
+```{r}
+library(mixOmics)
+X <- list(RNA = edata,
+          metabolite = mdat,
+          lipid = Ldata)
+Y <- BsubFG$Label
+summary(Y)
+
+list.keepX <- list(RNA = c(10,5), metabolite = c(10,5), lipid = c(10,5))
+
+# quick start
+MyResult.diablo <- block.splsda(X, Y, keepX=list.keepX)
+plotIndiv(MyResult.diablo,
+          ind.names = FALSE,
+          legend = TRUE, cex = c(1,2),
+          title = "Spaceflight B. subtilis with DIABLO") ## sample plot
+plotVar(MyResult.diablo, var.names = c(FALSE, FALSE, TRUE),
+        legend = TRUE, pch = c(16, 2, 2))
+plotDiablo(MyResult.diablo, ncomp = 1)
+
+circosPlot(MyResult.diablo, cutoff = 0.9, ncol.legend = 1, showIntraLinks = TRUE, line = TRUE, size.variables = 0.6)
+cimDiablo(MyResult.diablo, color.blocks = c('darkorchid', 'brown1', 'lightgreen'), comp = 1, margin=c(8,20), legend.position = "right")
+plotLoadings(MyResult.diablo, comp = 1, contrib = "max", size.name = 1.25)
+plotLoadings(MyResult.diablo, comp = 2, contrib = "max", size.name = 1.25)
+par(mfrow=c(1,1))
+
+# Relevance network
+network(MyResult.diablo, blocks = c(1,2,3),
+        color.node = c('darkorchid', 'brown1', 'lightgreen'), 
+        cutoff = 0.6, save = 'jpeg', name.save = 'DIABLOnetwork')
+
+MyResult.diablo2 <- block.plsda(X, Y) 
+```
 
 
 
