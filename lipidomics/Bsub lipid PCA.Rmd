@@ -1,0 +1,130 @@
+---
+title: "Bsub lipid analysis"
+author: "Yen-Kai Chen"
+date: "22/04/2020"
+output: word_document
+editor_options: 
+  chunk_output_type: console
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+```{r}
+# set up
+GLDS138.lipid.as <- read.csv("GLDS138.lipid.as.csv", check.names = FALSE, header = TRUE)
+utils::View(GLDS138.lipid.as)
+
+# Just B. subtilis
+Bsub.as <- GLDS138.lipid.as[c(1:36,73:88),]
+Bsub.as <- Bsub.as[,-c(3)]
+
+# Get rid of Control ASAP and Frozen - so just media and pellet
+BsubMP <- Bsub.as[-c(37:52),]
+BsubMP$Label <- factor(BsubMP$Label)
+
+# Just Pellet - the bacteria - comparison of just flight vs ground
+BsubFG <- BsubMP[c(19:36),]
+
+# Just Media consumed by the bacteria - F vs G
+BsubMd <- BsubMP[c(1:18),]
+BsubMd$Label <- factor(BsubMd$Label)
+
+```
+
+# Start analysis of PCA
+```{r}
+library(mixOmics)
+# the general file
+X <- GLDS138.lipid.as[,4:ncol(GLDS138.lipid.as)]
+MyResult.pca <- pca(X, ncomp = 3, center = TRUE)
+plotIndiv(MyResult.pca, comp = c(1,2), legend = TRUE, title = 'GLDS138: PCA',
+          group = GLDS138.as$Label, legend.title = 'Treatment',
+          ellipse = FALSE, style = "ggplot2", ind.names = FALSE, 
+          pch = GLDS138.as$species, legend.title.pch = 'Species')
+plotVar(MyResult.pca)
+plotVar(MyResult.pca, cutoff = 0.8)
+MyResult.pca #34,21,7
+
+# B subtilis
+X <- Bsub.as[,3:ncol(Bsub.as)]
+MyResult.pca <- pca(X, ncomp = 3, center = TRUE)
+plotIndiv(MyResult.pca, comp = c(1,2), legend = TRUE, title = 'B. subtilis: PCA',
+          group = Bsub.as$Label, legend.title = 'Treatment',
+          ellipse = TRUE, style = "ggplot2", ind.names = FALSE)
+plotVar(MyResult.pca, cutoff = 0.8)
+MyResult.pca #32,28,7
+
+# Media and pellet
+X <- BsubMP[,3:ncol(BsubMP)]
+MyResult.pca <- pca(X, ncomp = 3, center = TRUE)
+plotIndiv(MyResult.pca, comp = c(1,2), legend = TRUE, title = 'B. subtilis - Media vs Pellet: PCA',
+          group = BsubMP$Label, legend.title = 'Treatment',
+          ellipse = TRUE, style = "ggplot2", ind.names = FALSE)
+plotVar(MyResult.pca, cutoff = 0.8)
+MyResult.pca #33,11,8
+
+# Pellet - Flight vs Ground
+X <- BsubFG[,3:ncol(BsubFG)]
+MyResult.pca <- pca(X, ncomp = 4, center = TRUE)
+plotIndiv(MyResult.pca, comp = c(1,2), legend = TRUE, title = 'B. subtilis - Flight vs Ground: PCA',
+          group = BsubFG$Label, legend.title = 'Treatment',
+          ellipse = TRUE, style = "ggplot2", ind.names = FALSE)
+plotIndiv(MyResult.pca, comp = c(1,2,3), legend = TRUE, title = 'B. subtilis - Flight vs Ground: PCA',
+          group = BsubFG$Label, legend.title = 'Treatment',
+          ellipse = TRUE, style = "3d", ind.names = FALSE)
+plotVar(MyResult.pca, cutoff = 0.8)
+MyResult.pca #18,15,11,11
+
+# Media - Flight vs Ground
+X <- BsubMd[,3:ncol(BsubMd)]
+MyResult.pca <- pca(X, ncomp = 3, center = TRUE)
+plotIndiv(MyResult.pca, comp = c(1,2), legend = TRUE, title = 'B. subtilis consumed media - Flight vs Ground: PCA',
+          group = BsubMd$Label, legend.title = 'Treatment',
+          ellipse = TRUE, style = "ggplot2", ind.names = FALSE)
+plotVar(MyResult.pca, cutoff = 0.8)
+MyResult.pca #28,13,12
+
+# top metabolites of PC1
+#metab_scores <- abs(MyResult.pca$rotation[,1])
+#metab_score_ranked <- sort(metab_scores, decreasing = TRUE)
+#top_10_metab <- names(metab_score_ranked[1:10])
+#MyResult.pca$rotation[top_10_metab,1]
+
+top_10_metab <- names(sort(abs(MyResult.pca$rotation[,1]), decreasing = TRUE)[1:10])
+MyResult.pca$rotation[top_10_metab,1]
+
+# top metabolites for PC2
+top_10_metab <- names(sort(abs(MyResult.pca$rotation[,2]), decreasing = TRUE)[1:10])
+MyResult.pca$rotation[top_10_metab,1]
+
+# top metabolites for PC3
+top_10_metab <- names(sort(abs(MyResult.pca$rotation[,3]), decreasing = TRUE)[1:10])
+MyResult.pca$rotation[top_10_metab,1]
+
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+```{r}
+devtools::session_info()
+```
