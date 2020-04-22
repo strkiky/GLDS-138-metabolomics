@@ -10,8 +10,95 @@ editor_options:
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
 ```
+# set up
 ```{r}
+setwd("C:/Users/strki/Documents/Git_R/GLDS-138 metabolomics/GLDS-138-metabolomics/Saur")
 
+GLDS138.as <- read.csv("GLDS138.as.csv", check.names = FALSE, header = TRUE)
+utils::View(GLDS138.as)
+
+# Just S. aureus
+Saur.as <- GLDS138.as[c(53:104),]
+Saur.as <- Saur.as[,-3]
+
+# Get rid of Control ASAP and Frozen - so just media and pellet
+SaurMP <- Saur.as[-c(19:26, 45:52),]
+SaurMP$Label <- factor(SaurMP$Label)
+
+# Just Pellet - the bacteria - comparison of just flight vs ground
+SaurFG <- SaurMP[c(19:36),]
+SaurFG$Label <- factor(SaurFG$Label)
+
+# Just Media consumed by the bacteria - F vs G
+SaurMd <- SaurMP[c(1:18),]
+SaurMd$Label <- factor(SaurMd$Label)
+```
+# Start analysis of PCA
+```{r}
+library(mixOmics)
+# the general file
+X <- GLDS138.as[,4:ncol(GLDS138.as)]
+MyResult.pca <- pca(X, ncomp = 3, center = TRUE)
+plotIndiv(MyResult.pca, comp = c(1,2), legend = TRUE, title = 'GLDS138: PCA',
+          group = GLDS138.as$Label, legend.title = 'Treatment',
+          ellipse = FALSE, style = "ggplot2", ind.names = FALSE, 
+          pch = GLDS138.as$species, legend.title.pch = 'Species')
+plotVar(MyResult.pca)
+plotVar(MyResult.pca, cutoff = 0.8)
+MyResult.pca 
+
+# S aureus
+X <- Saur.as[,3:ncol(Saur.as)]
+MyResult.pca <- pca(X, ncomp = 3, center = TRUE)
+plotIndiv(MyResult.pca, comp = c(1,2), legend = TRUE, title = 'S. aureus: PCA',
+          group = Saur.as$Label, legend.title = 'Treatment',
+          ellipse = TRUE, style = "ggplot2", ind.names = FALSE)
+plotVar(MyResult.pca, cutoff = 0.8)
+MyResult.pca 
+
+# Media and pellet
+X <- SaurMP[,3:ncol(SaurMP)]
+MyResult.pca <- pca(X, ncomp = 3, center = TRUE)
+plotIndiv(MyResult.pca, comp = c(1,2), legend = TRUE, title = 'S. aureus - Media vs Pellet: PCA',
+          group = SaurMP$Label, legend.title = 'Treatment',
+          ellipse = TRUE, style = "ggplot2", ind.names = FALSE)
+plotVar(MyResult.pca, cutoff = 0.8)
+MyResult.pca 
+
+# Pellet - Flight vs Ground
+X <- SaurFG[,3:ncol(SaurFG)]
+MyResult.pca <- pca(X, ncomp = 4, center = TRUE)
+plotIndiv(MyResult.pca, comp = c(1,2), legend = TRUE, title = 'B. subtilis - Flight vs Ground: PCA',
+          group = SaurFG$Label, legend.title = 'Treatment',
+          ellipse = TRUE, style = "ggplot2", ind.names = FALSE)
+plotVar(MyResult.pca, cutoff = 0.8)
+MyResult.pca 
+
+# Media - Flight vs Ground
+X <- SaurMd[,3:ncol(SaurMd)]
+MyResult.pca <- pca(X, ncomp = 3, center = TRUE)
+plotIndiv(MyResult.pca, comp = c(1,2), legend = TRUE, title = 'B. subtilis consumed media - Flight vs Ground: PCA',
+          group = SaurMd$Label, legend.title = 'Treatment',
+          ellipse = TRUE, style = "ggplot2", ind.names = FALSE)
+plotVar(MyResult.pca, cutoff = 0.8)
+MyResult.pca 
+
+# top metabolites of PC1
+#metab_scores <- abs(MyResult.pca$rotation[,1])
+#metab_score_ranked <- sort(metab_scores, decreasing = TRUE)
+#top_10_metab <- names(metab_score_ranked[1:10])
+#MyResult.pca$rotation[top_10_metab,1]
+
+top_10_metab <- names(sort(abs(MyResult.pca$rotation[,1]), decreasing = TRUE)[1:10])
+MyResult.pca$rotation[top_10_metab,1]
+
+# top metabolites for PC2
+top_10_metab <- names(sort(abs(MyResult.pca$rotation[,2]), decreasing = TRUE)[1:10])
+MyResult.pca$rotation[top_10_metab,1]
+
+# top metabolites for PC3
+top_10_metab <- names(sort(abs(MyResult.pca$rotation[,3]), decreasing = TRUE)[1:10])
+MyResult.pca$rotation[top_10_metab,1]
 ```
 
 
