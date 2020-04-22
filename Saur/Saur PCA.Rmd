@@ -1,0 +1,46 @@
+---
+title: "S. aureus PCA"
+author: "Yen-Kai Chen"
+date: "22/04/2020"
+output: word_document
+editor_options: 
+  chunk_output_type: console
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+```{r}
+
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+```{r}
+devtools::session_info()
+```
