@@ -169,11 +169,11 @@ MyResult.pca$rotation[top_10_metab,1]
 
 # top metabolites for PC2
 top_10_metab <- names(sort(abs(MyResult.pca$rotation[,2]), decreasing = TRUE)[1:10])
-MyResult.pca$rotation[top_10_metab,1]
+MyResult.pca$rotation[top_10_metab,2]
 
 # top metabolites for PC3
 top_10_metab <- names(sort(abs(MyResult.pca$rotation[,3]), decreasing = TRUE)[1:10])
-MyResult.pca$rotation[top_10_metab,1]
+MyResult.pca$rotation[top_10_metab,3]
 ```
 # sPCA
 ```{r}
@@ -195,8 +195,8 @@ plotVar(MyResult.spca, cex = 3)
 
 # Pellet - Flight vs Ground
 X <- BsubFG[,3:ncol(BsubFG)]
-MyResult.spca <- spca(X, ncomp = 4, center = TRUE, keepX = c(18,10,5,5))
-plotIndiv(MyResult.spca, comp = c(1,2), legend = TRUE, title = 'B. subtilis - Flight vs Ground: sPCA',
+MyResult.spca <- spca(X, ncomp = 3, center = TRUE, keepX = c(18,15,12))
+plotIndiv(MyResult.spca, comp = c(2,3), legend = TRUE, title = 'B. subtilis - Flight vs Ground: sPCA',
           group = BsubFG$Label, legend.title = 'Treatment',
           ellipse = TRUE, style = "ggplot2", ind.names = FALSE)
 plotVar(MyResult.spca, cex = 3)
@@ -209,7 +209,23 @@ plotIndiv(MyResult.spca, comp = c(1,2), legend = TRUE, title = 'B. subtilis cons
           ellipse = TRUE, style = "ggplot2", ind.names = FALSE)
 plotVar(MyResult.spca, cex = 3)
 ```
-# MetaboAnalyst
+# Anova
+```{r}
+anova_data <- BsubFG[,c("Label", "210885", "110647", "120996", "101299", "5085", "stearic acid")]
+library(tidyverse)
+anova_data %>% pivot_longer(-Label, names_to = "type", values_to = "value") %>%
+  mutate(type = factor(type, levels = c("210885", "110647", "120996", "101299", "5085", "stearic acid"))) %>%
+  ggplot(aes(x = Label, y = value, color = Label))+
+  geom_boxplot()+
+  facet_wrap(~type)
+anova_data %>% pivot_longer(-Label, names_to = "type", values_to = "value") %>%
+  mutate(type = factor(type, levels = c("210885", "110647", "120996", "101299", "5085", "stearic acid"))) %>%
+  ggplot(aes(x = Label, y = value, color = type))+
+  geom_boxplot()+
+  facet_wrap(~type)
+```
+
+# MetaboAnalyst0
 ```{r}
 setwd("C:/Users/strki/Documents/Git_R/GLDS-138 metabolomics/GLDS-138-metabolomics/Compre Bsub PCA")
 library(MetaboAnalystR)
