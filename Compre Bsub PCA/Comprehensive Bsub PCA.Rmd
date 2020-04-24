@@ -213,16 +213,11 @@ plotVar(MyResult.spca, cex = 3)
 ```{r}
 anova_data <- BsubFG[,c("Label", "210885", "110647", "120996", "101299", "5085", "stearic acid")]
 library(tidyverse)
-anova_data %>% pivot_longer(-Label, names_to = "type", values_to = "value") %>%
-  mutate(type = factor(type, levels = c("210885", "110647", "120996", "101299", "5085", "stearic acid"))) %>%
-  ggplot(aes(x = Label, y = value, color = Label))+
-  geom_boxplot()+
-  facet_wrap(~type)
-anova_data %>% pivot_longer(-Label, names_to = "type", values_to = "value") %>%
-  mutate(type = factor(type, levels = c("210885", "110647", "120996", "101299", "5085", "stearic acid"))) %>%
-  ggplot(aes(x = Label, y = value, color = type))+
-  geom_boxplot()+
-  facet_wrap(~type)
+anova_data %>% pivot_longer(-Label, names_to = "Metabolite", values_to = "value") %>%
+  mutate(Metabolite = factor(Metabolite, levels = c("210885", "110647", "120996", "101299", "5085", "stearic acid"))) %>%
+  ggplot(aes(x = Label, y = value, color = Metabolite)) +
+  geom_boxplot() +
+  facet_wrap(~Metabolite)
 ```
 
 # MetaboAnalyst0
