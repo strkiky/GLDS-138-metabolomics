@@ -218,8 +218,16 @@ anova_data %>% pivot_longer(-Label, names_to = "Metabolite", values_to = "value"
   ggplot(aes(x = Label, y = value, color = Metabolite)) +
   geom_boxplot() +
   facet_wrap(~Metabolite)
-```
 
+aov.models = anova_data[ , -grep("Label", names(anova_data))] %>%
+  map(~ aov(.~ anova_data$Label))
+summary(aov.models$`210885`)
+summary(aov.models$`110647`)
+summary(aov.models$`120996`)
+summary(aov.models$`101299`)
+summary(aov.models$`5085`)
+summary(aov.models$`stearic acid`)
+```
 # MetaboAnalyst0
 ```{r}
 setwd("C:/Users/strki/Documents/Git_R/GLDS-138 metabolomics/GLDS-138-metabolomics/Compre Bsub PCA")
