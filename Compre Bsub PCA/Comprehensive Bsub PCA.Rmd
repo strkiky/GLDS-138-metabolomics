@@ -98,7 +98,7 @@ BsubMP$Label <- factor(BsubMP$Label)
 # Just Pellet - the bacteria - comparison of just flight vs ground
 BsubFG <- BsubMP[c(19:36),]
 BsubFG$Label <- gsub("Pellet ", "", BsubFG$Label)
-write.csv(BsubFG,"GLDS138.BsubFG.as.csv", row.names = F) # used later for metaboanalyst
+# write.csv(BsubFG,"GLDS138.BsubFG.as.csv", row.names = F) # used later for metaboanalyst
 
 # Just Media consumed by the bacteria - F vs G
 BsubMd <- BsubMP[c(1:18),]
@@ -352,6 +352,77 @@ Ldata <- Ldata[c(19:36),]
 Ldata <- Ldata[,-c(1:2)]
 rownames(Ldata) <- rowNameE
 ```
+#Partial Least Squares - Discriminant Analysis
+```{r}
+# set up
+X <- mdat
+Y <- BsubFG$Label
+summary(Y)
+dim(X)
+length(Y)
+
+# PLS-DA
+MyResult.plsda <- plsda(X,Y)
+plotIndiv(MyResult.plsda)
+plotVar(MyResult.plsda, cutoff = 0.75)
+
+# sPLS-DA
+MyResult.splsda <- splsda(X, Y, keepX = c(60,60))
+plotIndiv(MyResult.splsda, ind.names = FALSE, legend = TRUE,
+          ellipse = TRUE, star = TRUE, title = 'Spaceflight B. subtilis: sPLS-DA',
+          X.label = 'PLS-DA 1', Y.label = 'PLS-DA 2')
+plotVar(MyResult.splsda, cutoff = 0.85)
+selectVar(MyResult.splsda, comp = 1)$name
+
+# Background prediction
+background <- background.predict(MyResult.splsda, comp.predicted = 2,
+                                 dist = "max.dist")
+plotIndiv(MyResult.splsda, comp = 1:2, group = BsubFG$Label,
+          ind.names = FALSE, title = "Maximum distance",
+          legend = TRUE,  background = background)
+
+# ROC - check for ability to predict classification
+aud.plsda <- auroc(MyResult.splsda)
+
+# Variable selection output
+MyResult.splsda2 <- splsda(X, Y, ncomp = 3, keepX = c(38,19,9))
+selectVar(MyResult.splsda2, comp = 1)$value
+plotLoadings(MyResult.splsda2, contrib = 'max', method = 'mean')
+plotIndiv(MyResult.splsda2, style="3d")
+
+# Tuning parameters and numerical outputs
+MyResult.plsda2 <- plsda(X,Y, ncomp=10)
+set.seed(33) # for reproducbility, otherwise increase nrepeat
+MyPerf.plsda <- perf(MyResult.plsda2, validation = "Mfold", folds = 3, 
+                  progressBar = FALSE, nrepeat = 10) # Suggest nrepeat = 50, but it then starts to lag
+
+plot(MyPerf.plsda, col = color.mixo(5:7), sd = TRUE, legend.position = "horizontal")
+MyPerf.plsda
+
+list.keepX <- c(5:10,  seq(20, 100, 10))
+list.keepX
+
+set.seed(30) # for reproducbility, otherwise increase nrepeat
+tune.splsda.BsubFG <- tune.splsda(X, Y, ncomp = 2, # suggest to push ncomp a bit more, e.g. 4, this cae, ultimal was 2
+                                 validation = 'Mfold',
+                                 folds = 3, dist = 'max.dist', progressBar = FALSE,
+                                 measure = "BER", test.keepX = list.keepX,
+                                 nrepeat = 10)   # we suggest nrepeat = 50
+
+error <- tune.splsda.BsubFG$error.rate
+ncomp <- tune.splsda.BsubFG$choice.ncomp$ncomp # optimal number of components based on t-tests on the error rate
+ncomp
+select.keepX <- tune.splsda.BsubFG$choice.keepX[1:ncomp]  # optimal number of variables to select
+select.keepX
+
+plot(tune.splsda.BsubFG, col = color.jet(ncomp))
+
+MyResult.splsda.final <- splsda(X, Y, ncomp = ncomp, keepX = select.keepX)
+
+plotIndiv(MyResult.splsda.final, ind.names = FALSE, legend=TRUE,
+          ellipse = TRUE, title="sPLS-DA - final result")
+```
+
 # Projection to Latent Structure (PLS)
 ```{r}
 #quick start on PLS
