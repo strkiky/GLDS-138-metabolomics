@@ -351,9 +351,47 @@ Ldata <- read.csv("GLDS138.Lipid.as.csv", row.names = 1, check.names = FALSE)
 Ldata <- Ldata[c(19:36),]
 Ldata <- Ldata[,-c(1:2)]
 rownames(Ldata) <- rowNameE
-
-
 ```
+# Projection to Latent Structure (PLS)
+```{r}
+#quick start on PLS
+X <- edata
+Y <- mdat
+dim(X); dim(Y)
+
+MyResult.spls <- spls(X, Y, keepX = c(20, 20), keepY = c(10,10))
+plotIndiv(MyResult.spls, group = BsubFG$Label)
+plotVar(MyResult.spls, cex = c(3,3), legend = TRUE)
+
+plotIndiv(MyResult.spls, group = BsubFG$Label,
+          rep.space = "XY-variate", legend = TRUE,
+          legend.title = 'Treatment',
+          title = 'Spaceflight Bacillus subtilis: sPLS')
+
+# Clustered image maps
+X11()
+cim(MyResult.spls, comp = 1)
+
+#Relevance networks
+X11()
+network(MyResult.spls, comp = 1, interactive = TRUE)
+# network(MyResult.spls, comp = 1, cutoff = 0.89, save = 'jpeg',name.save = 'PLS.network') # if intending to save it
+
+# Arrow plots
+plotArrow(MyResult.spls,group=BsubFG$Label, legend = TRUE,
+          X.label = 'PLS comp 1', Y.label = 'PLS comp 2')
+# Short arrows indicate a good agreement found by the PLS between both data sets
+# more useful if we're looking at time related, or soemthing linking from one treatment to another.
+
+# Variable selection outputs
+MySelectedVariables <- selectVar(MyResult.spls, comp = 1)
+MySelectedVariables$X$name # Selected genes on component 1
+
+MySelectedVariables$Y$name # Selected metabolites on component 1
+
+plotLoadings(MyResult.spls, comp = 1, size.name = rel(0.5))
+```
+
 # Multi-block Discriminant Analysis with DIABLO
 ```{r}
 library(mixOmics)
@@ -363,19 +401,19 @@ X <- list(RNA = edata,
 Y <- BsubFG$Label
 summary(Y)
 
-list.keepX <- list(RNA = c(10,5), metabolite = c(10,5), lipid = c(10,5))
+list.keepX <- list(RNA = c(10,6), metabolite = c(10,6), lipid = c(10,6))
 
 # quick start
 MyResult.diablo <- block.splsda(X, Y, keepX=list.keepX)
 plotIndiv(MyResult.diablo,
-          ind.names = FALSE,
+          ind.names = TRUE,
           legend = TRUE, cex = c(1,2),
           title = "Spaceflight B. subtilis with DIABLO") ## sample plot
-plotVar(MyResult.diablo, var.names = c(FALSE, FALSE, TRUE),
-        legend = TRUE, pch = c(16, 2, 2))
+plotVar(MyResult.diablo, var.names = c(FALSE, TRUE, FALSE),
+        legend = TRUE, pch = c(16, 1.5, 2))
 plotDiablo(MyResult.diablo, ncomp = 1)
 
-circosPlot(MyResult.diablo, cutoff = 0.9, ncol.legend = 1, showIntraLinks = TRUE, line = TRUE, size.variables = 0.6)
+circosPlot(MyResult.diablo, cutoff = 0.93, ncol.legend = 1, showIntraLinks = TRUE, line = TRUE, size.variables = 0.6)
 cimDiablo(MyResult.diablo, color.blocks = c('darkorchid', 'brown1', 'lightgreen'), comp = 1, margin=c(8,20), legend.position = "right")
 plotLoadings(MyResult.diablo, comp = 1, contrib = "max", size.name = 1.25)
 plotLoadings(MyResult.diablo, comp = 2, contrib = "max", size.name = 1.25)
