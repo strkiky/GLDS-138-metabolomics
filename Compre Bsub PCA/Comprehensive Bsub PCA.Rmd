@@ -389,6 +389,24 @@ MyResult.splsda2 <- splsda(X, Y, ncomp = 3, keepX = c(38,19,9))
 selectVar(MyResult.splsda2, comp = 1)$value
 plotLoadings(MyResult.splsda2, contrib = 'max', method = 'mean')
 plotIndiv(MyResult.splsda2, style="3d")
+
+# Anova test on pls-da's top variables
+plsda_data <- BsubFG[,c("Label", "ribonic acid", "methionine", "110014", "223522", "128027", "224109")]
+library(tidyverse)
+plsda_data %>% pivot_longer(-Label, names_to = "Metabolite", values_to = "value") %>%
+  mutate(Metabolite = factor(Metabolite, levels = c("ribonic acid", "methionine", "110014", "223522", "128027", "224109"))) %>%
+  ggplot(aes(x = Label, y = value, color = Metabolite)) +
+  geom_boxplot() +
+  facet_wrap(~Metabolite)
+
+aov.plsda.models = plsda_data[ , -grep("Label", names(plsda_data))] %>%
+  map(~ aov(.~ plsda_data$Label))
+summary(aov.plsda.models$`ribonic acid`)
+summary(aov.plsda.models$`methionine`)
+summary(aov.plsda.models$`110014`)
+summary(aov.plsda.models$`223522`)
+summary(aov.plsda.models$`128027`)
+summary(aov.plsda.models$`224109`)
 ```
 
 # Projection to Latent Structure (PLS)
