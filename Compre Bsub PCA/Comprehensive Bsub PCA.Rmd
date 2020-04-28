@@ -347,7 +347,7 @@ X <- edata
 Y <- mdat
 dim(X); dim(Y)
 
-MyResult.spls <- spls(X, Y, keepX = c(20, 20), keepY = c(10,10))
+MyResult.spls <- spls(X, Y, keepX = c(20, 20), keepY = c(6,5))
 plotIndiv(MyResult.spls, group = BsubFG$Label)
 plotVar(MyResult.spls, cex = c(3,3), legend = TRUE)
 
@@ -362,7 +362,8 @@ cim(MyResult.spls, comp = 1)
 
 #Relevance networks
 X11()
-network(MyResult.spls, comp = 1, interactive = TRUE)
+network(MyResult.spls, comp = 1, interactive = TRUE, 
+        color.edge = color.GreenRed(100))
 # network(MyResult.spls, comp = 1, cutoff = 0.89, save = 'jpeg',name.save = 'PLS.network') # if intending to save it
 
 # Arrow plots
@@ -378,6 +379,7 @@ MySelectedVariables$X$name # Selected genes on component 1
 MySelectedVariables$Y$name # Selected metabolites on component 1
 
 plotLoadings(MyResult.spls, comp = 1, size.name = rel(0.5))
+
 ```
 
 # Multi-block Discriminant Analysis with DIABLO
@@ -389,7 +391,7 @@ X <- list(RNA = edata,
 Y <- BsubFG$Label
 summary(Y)
 
-list.keepX <- list(RNA = c(10,6), metabolite = c(10,6), lipid = c(10,6))
+list.keepX <- list(RNA = c(10,6), metabolite = c(6,5), lipid = c(10,6))
 
 # quick start
 MyResult.diablo <- block.splsda(X, Y, keepX=list.keepX)
@@ -402,7 +404,11 @@ plotVar(MyResult.diablo, var.names = c(FALSE, TRUE, FALSE),
 plotDiablo(MyResult.diablo, ncomp = 1)
 
 circosPlot(MyResult.diablo, cutoff = 0.93, ncol.legend = 1, showIntraLinks = TRUE, line = TRUE, size.variables = 0.6)
-cimDiablo(MyResult.diablo, color.blocks = c('darkorchid', 'brown1', 'lightgreen'), comp = 1, margin=c(8,20), legend.position = "right")
+
+X11()
+cimDiablo(MyResult.diablo, comp = 1,
+          color.blocks = c('darkorchid', 'brown1', 'lightgreen'),  margin=c(9,18), 
+          legend.position = "right", size.legend = 0.9)
 plotLoadings(MyResult.diablo, comp = 1, contrib = "max", size.name = 1.25)
 plotLoadings(MyResult.diablo, comp = 2, contrib = "max", size.name = 1.25)
 par(mfrow=c(1,1))
@@ -410,9 +416,7 @@ par(mfrow=c(1,1))
 # Relevance network
 network(MyResult.diablo, blocks = c(1,2,3),
         color.node = c('darkorchid', 'brown1', 'lightgreen'), 
-        cutoff = 0.6, save = 'jpeg', name.save = 'DIABLOnetwork')
-
-MyResult.diablo2 <- block.plsda(X, Y) 
+        interactive = TRUE)
 ```
 # MetaboAnalyst
 ```{r}
