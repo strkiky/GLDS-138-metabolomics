@@ -257,33 +257,42 @@ plotIndiv(MyResult.splsda, comp = 1:2, group = BsubFG$Label,
           ind.names = FALSE, title = "Maximum distance",
           legend = TRUE,  background = background)
 
-# ROC - check for ability to predict classification
-aud.plsda <- auroc(MyResult.splsda)
-
 # Variable selection output
 MyResult.splsda2 <- splsda(X, Y, ncomp = 3, keepX = c(38,19,9))
 selectVar(MyResult.splsda2, comp = 1)$value
 plotLoadings(MyResult.splsda2, contrib = 'max', method = 'mean')
 plotIndiv(MyResult.splsda2, style="3d")
 
-# Anova test on pls-da's top variables
-plsda_data <- BsubFG[,c("Label", "ribonic acid", "methionine", "110014", "223522", "128027", "224109")]
-library(tidyverse)
-plsda_data %>% pivot_longer(-Label, names_to = "Metabolite", values_to = "value") %>%
-  mutate(Metabolite = factor(Metabolite, levels = c("ribonic acid", "methionine", "110014", "223522", "128027", "224109"))) %>%
-  ggplot(aes(x = Label, y = value, color = Metabolite)) +
-  geom_boxplot() +
-  facet_wrap(~Metabolite)
+##  Tuning parameters and numerical outputs
+# check the best number of components to use 
+MyResult.splsda2 <- plsda(X, Y, ncomp = 5)
+MyPerf.plsda <- perf(MyResult.splsda2, validation = "Mfold", folds = 3,
+                     progressBar = FALSE, nrepeat = 50)
+plot(MyPerf.plsda, col = color.mixo(5:7), sd = TRUE, legend.position = "horizontal") # looks to be 2 components
 
-#
-aov.plsda.models = plsda_data[ , -grep("Label", names(plsda_data))] %>%
-  map(~ aov(.~ plsda_data$Label))
-summary(aov.plsda.models$`ribonic acid`)
-summary(aov.plsda.models$`methionine`)
-summary(aov.plsda.models$`110014`)
-summary(aov.plsda.models$`223522`)
-summary(aov.plsda.models$`128027`)
-summary(aov.plsda.models$`224109`)
+list.keepX <- c(5:10,  seq(20, 100, 10))
+list.keepX # output the grid of values tested
+
+tune.splsda.srbct <- tune.splsda(X, Y, ncomp = 3, 
+                                 validation = 'Mfold',
+                                 folds = 3, dist = 'max.dist', progressBar = FALSE,
+                                 measure = "BER", test.keepX = list.keepX,
+                                 nrepeat = 50)
+error <- tune.splsda.srbct$error.rate
+ncomp <- tune.splsda.srbct$choice.ncomp$ncomp # optimal number of components based on t-tests on the error rate
+ncomp # confirmed to be 1.
+# check the number of metabolites to keep per component
+select.keepX <- tune.splsda.srbct$choice.keepX[1:ncomp]  # optimal number of variables to select
+select.keepX 
+select.keepX <- tune.splsda.srbct$choice.keepX[1:2]  # optimal no of variables for 2 components
+select.keepX
+
+plot(tune.splsda.srbct, col = color.jet(3))
+
+# The final graph - we'll keep two anyone
+MyResult.splsda.final <- splsda(X, Y, ncomp = 2, keepX = select.keepX)
+plotIndiv(MyResult.splsda.final, ind.names = FALSE, legend=TRUE,
+          ellipse = TRUE, title="sPLS-DA - final result")
 ```
 
 # MetaboAnalyst0
