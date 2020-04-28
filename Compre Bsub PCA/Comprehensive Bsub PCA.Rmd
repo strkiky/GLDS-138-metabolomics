@@ -239,9 +239,10 @@ length(Y)
 
 # PLS-DA
 MyResult.plsda <- plsda(X,Y)
-plotIndiv(MyResult.plsda)
+plotIndiv(MyResult.plsda, legend = TRUE,
+          ellipse = TRUE, star = TRUE, title = 'Spaceflight B. subtilis: PLS-DA')
 plotVar(MyResult.plsda, cutoff = 0.75)
-plotLoadings(MyResult.plsda, comp = 1, title = 'Loadings on comp 1', 
+plotLoadings(MyResult.plsda, comp = 1, title = 'Loadings on comp 1: PLS-DA', 
              contrib = 'max', method = 'mean', ndisplay = 20)
 
 # sPLS-DA
