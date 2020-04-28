@@ -289,10 +289,24 @@ select.keepX
 
 plot(tune.splsda.srbct, col = color.jet(3))
 
-# The final graph - we'll keep two anyone
+# The final graph - we have to use two component 
 MyResult.splsda.final <- splsda(X, Y, ncomp = 2, keepX = select.keepX)
 plotIndiv(MyResult.splsda.final, ind.names = FALSE, legend=TRUE,
           ellipse = TRUE, title="sPLS-DA - final result")
+
+plotLoadings(MyResult.splsda.final, comp = 1, title = 'Loadings on comp 1', 
+             contrib = 'max', method = 'mean')
+X11()
+cim(MyResult.splsda.final, comp = 1, title = "Component 1")
+plotArrow(MyResult.splsda.final, legend=T)
+
+splsda_metab <- BsubFG[,c("Label", "ribonic acid", "methionine", "110014", "223522", "128027", "224109")]
+library(tidyverse)
+splsda_metab %>% pivot_longer(-Label, names_to = "Metabolite", values_to = "value") %>%
+  mutate(Metabolite = factor(Metabolite, levels = c("ribonic acid", "methionine", "110014", "223522", "128027", "224109"))) %>%
+  ggplot(aes(x = Label, y = value, color = Metabolite)) +
+  geom_boxplot() +
+  facet_wrap(~Metabolite)
 ```
 
 # MetaboAnalyst0
