@@ -241,6 +241,8 @@ length(Y)
 MyResult.plsda <- plsda(X,Y)
 plotIndiv(MyResult.plsda)
 plotVar(MyResult.plsda, cutoff = 0.75)
+plotLoadings(MyResult.plsda, comp = 1, title = 'Loadings on comp 1', 
+             contrib = 'max', method = 'mean', ndisplay = 20)
 
 # sPLS-DA
 MyResult.splsda <- splsda(X, Y, keepX = c(60,60))
@@ -308,102 +310,6 @@ splsda_metab %>% pivot_longer(-Label, names_to = "Metabolite", values_to = "valu
   ggplot(aes(x = Label, y = value, color = Metabolite)) +
   geom_boxplot() +
   facet_wrap(~Metabolite)
-```
-
-# MetaboAnalyst0
-```{r}
-setwd("C:/Users/strki/Documents/Git_R/GLDS-138 metabolomics/GLDS-138-metabolomics/Compre Bsub PCA")
-library(MetaboAnalystR)
-
-# set up
-mSet<-InitDataObjects("pktable", "stat", FALSE)
-mSet<-Read.TextData(mSet, "GLDS138.BsubFG.as.csv", "rowu", "disc");
-mSet<-SanityCheckData(mSet)
-mSet<-ReplaceMin(mSet);
-mSet<-PreparePrenormData(mSet)
-mSet<-Normalization(mSet, "NULL", "NULL", "NULL", ratio=FALSE, ratioNum=20)
-mSet<-PlotNormSummary(mSet, "norm_0_", "png", 72, width=NA)
-mSet<-PlotSampleNormSummary(mSet, "snorm_0_", "png", 72, width=NA)
-
-# Anova
-mSet<-ANOVA.Anal(mSet, F, 1.0E-3, "fisher", FALSE)
-mSet<-PlotANOVA(mSet, "aov_fisher_", "png", 72, width=NA)
-mSet<-ANOVA.Anal(mSet, F, 1.0E-3, "tukey", FALSE)
-mSet<-PlotANOVA(mSet, "aov_tukey_", "png", 72, width=NA)
-# appears to be the same/similar metabolites as with more variables
-
-# Correlation analysis
-mSet<-PlotCorrHeatMap(mSet, "corr_1_", "png", 102, width=NA, "row", "pearson", "topo", "overview", F, F, F, 999)
-
-# Pattern Hunter
-mSet<-Match.Pattern(mSet, "pearson", "1-2")
-mSet<-PlotCorr(mSet, "ptn_1_", "png", 72, width=NA) 
-mSet<-Match.Pattern(mSet, "pearson", "2-1")
-mSet<-PlotCorr(mSet, "ptn_2_", "png", 72, width=NA)
-
-# PCA
-mSet<-PCA.Anal(mSet)
-mSet<-PlotPCAPairSummary(mSet, "pca_pair_0_", "png", 102, width=NA, 5)
-mSet<-PlotPCAScree(mSet, "pca_scree_0_", "png", 72, width=NA, 5)
-mSet<-PlotPCA2DScore(mSet, "pca_score2d_0_", "png", 72, width=NA, 1,2,0.95,0,0)
-mSet<-PlotPCALoading(mSet, "pca_loading_0_", "png", 72, width=NA, 1,2);
-mSet<-PlotPCABiplot(mSet, "pca_biplot_0_", "png", 102, width=NA, 1,2)
-mSet<-PlotPCA3DLoading(mSet, "pca_loading3d_0_", "json", 1,2,3)
-
-# Hierarchical Clustering
-mSet<-PlotHCTree(mSet, "tree_0_", "png", 72, width=NA, "euclidean", "ward.D")
-mSet<-PlotHeatMap(mSet, "heatmap_0_", "png", 300, width=NA, "norm", "row", "euclidean", "ward.D","bwm", "overview", T, T, NA, T, F)
-
-# PLS-DA
-mSet<-PLSR.Anal(mSet, reg=TRUE)
-mSet<-PlotPLSPairSummary(mSet, "pls_pair_0_", "png", 72, width=NA, 5)
-mSet<-PlotPLS2DScore(mSet, "pls_score2d_0_", "png", 72, width=NA, 1,2,0.95,0,0)
-mSet<-PlotPLS3DScoreImg(mSet, "pls_score3d_0_", "png", 72, width=NA, 1,2,3, 40)
-mSet<-PlotPLSLoading(mSet, "pls_loading_0_", "png", 72, width=NA, 1, 2);
-mSet<-PlotPLS3DLoading(mSet, "pls_loading3d_0_", "json", 1,2,3)
-mSet<-PLSDA.CV(mSet, "L",4, "Q2")
-mSet<-PlotPLS.Classification(mSet, "pls_cv_0_", "png", 72, width=NA)
-mSet<-PlotPLS.Imp(mSet, "pls_imp_0_", "png", 72, width=NA, "vip", "Comp. 1", 15,FALSE)
-
-#Kmeans
-mSet<-Kmeans.Anal(mSet, 4)
-mSet<-PlotKmeans(mSet, "km_1_", "png", 150, width=NA)
-
-# Random Forest
-mSet<-RF.Anal(mSet, 1000,7,1)
-mSet<-PlotRF.Classify(mSet, "rf_cls_1_", "png", 72, width=NA)
-mSet<-PlotRF.VIP(mSet, "rf_imp_1_", "png", 72, width=NA)
-mSet<-PlotRF.Outlier(mSet, "rf_outlier_1_", "png", 72, width=NA)
-
-# Enrichment analysis
-mSet<-InitDataObjects("conc", "msetora", FALSE)
-cmpd.vec<-c("ribonic acid","isothreonic acid","isocitric acid","pyruvic acid","tryptophan","methionine")
-mSet<-Setup.MapData(mSet, cmpd.vec);
-mSet<-CrossReferencing(mSet, "name");
-mSet<-CreateMappingResultTable(mSet)
-mSet<-PerformDetailMatch(mSet, "isothreonic acid");
-mSet<-GetCandidateList(mSet);
-mSet<-SetCandidate(mSet, "isothreonic acid", "Threonic acid");
-mSet<-SetMetabolomeFilter(mSet, F);
-mSet<-SetCurrentMsetLib(mSet, "snp", 2);
-mSet<-CalculateHyperScore(mSet)
-mSet<-PlotORA(mSet, "ora_0_", "net", "png", 72, width=NA)
-mSet<-CalculateHyperScore(mSet)
-mSet<-PlotORA(mSet, "ora_1_", "net", "png", 72, width=NA)
-
-# Pathway Analysis
-mSet<-InitDataObjects("conc", "pathora", FALSE)
-cmpd.vec<-c("ribonic acid","isothreonic acid","isocitric acid","pyruvic acid","tryptophan","methionine")
-mSet<-Setup.MapData(mSet, cmpd.vec);
-mSet<-CrossReferencing(mSet, "name");
-mSet<-CreateMappingResultTable(mSet)
-mSet<-PerformDetailMatch(mSet, "isothreonic acid");
-mSet<-GetCandidateList(mSet);
-mSet<-SetCandidate(mSet, "isothreonic acid", "Threonic acid");
-mSet<-SetKEGG.PathLib(mSet, "bsu", "current")
-mSet<-SetMetabolomeFilter(mSet, F);
-mSet<-CalculateOraScore(mSet, "rbc", "hyperg")
-mSet<-PlotPathSummary(mSet, "path_view_0_", "png", 72, width=NA)
 ```
 # Set up for Multi-omics
 ```{r}
@@ -508,7 +414,101 @@ network(MyResult.diablo, blocks = c(1,2,3),
 
 MyResult.diablo2 <- block.plsda(X, Y) 
 ```
+# MetaboAnalyst
+```{r}
+setwd("C:/Users/strki/Documents/Git_R/GLDS-138 metabolomics/GLDS-138-metabolomics/Compre Bsub PCA")
+library(MetaboAnalystR)
 
+# set up
+mSet<-InitDataObjects("pktable", "stat", FALSE)
+mSet<-Read.TextData(mSet, "GLDS138.BsubFG.as.csv", "rowu", "disc");
+mSet<-SanityCheckData(mSet)
+mSet<-ReplaceMin(mSet);
+mSet<-PreparePrenormData(mSet)
+mSet<-Normalization(mSet, "NULL", "NULL", "NULL", ratio=FALSE, ratioNum=20)
+mSet<-PlotNormSummary(mSet, "norm_0_", "png", 72, width=NA)
+mSet<-PlotSampleNormSummary(mSet, "snorm_0_", "png", 72, width=NA)
+
+# Anova
+mSet<-ANOVA.Anal(mSet, F, 1.0E-3, "fisher", FALSE)
+mSet<-PlotANOVA(mSet, "aov_fisher_", "png", 72, width=NA)
+mSet<-ANOVA.Anal(mSet, F, 1.0E-3, "tukey", FALSE)
+mSet<-PlotANOVA(mSet, "aov_tukey_", "png", 72, width=NA)
+# appears to be the same/similar metabolites as with more variables
+
+# Correlation analysis
+mSet<-PlotCorrHeatMap(mSet, "corr_1_", "png", 102, width=NA, "row", "pearson", "topo", "overview", F, F, F, 999)
+
+# Pattern Hunter
+mSet<-Match.Pattern(mSet, "pearson", "1-2")
+mSet<-PlotCorr(mSet, "ptn_1_", "png", 72, width=NA) 
+mSet<-Match.Pattern(mSet, "pearson", "2-1")
+mSet<-PlotCorr(mSet, "ptn_2_", "png", 72, width=NA)
+
+# PCA
+mSet<-PCA.Anal(mSet)
+mSet<-PlotPCAPairSummary(mSet, "pca_pair_0_", "png", 102, width=NA, 5)
+mSet<-PlotPCAScree(mSet, "pca_scree_0_", "png", 72, width=NA, 5)
+mSet<-PlotPCA2DScore(mSet, "pca_score2d_0_", "png", 72, width=NA, 1,2,0.95,0,0)
+mSet<-PlotPCALoading(mSet, "pca_loading_0_", "png", 72, width=NA, 1,2);
+mSet<-PlotPCABiplot(mSet, "pca_biplot_0_", "png", 102, width=NA, 1,2)
+mSet<-PlotPCA3DLoading(mSet, "pca_loading3d_0_", "json", 1,2,3)
+
+# Hierarchical Clustering
+mSet<-PlotHCTree(mSet, "tree_0_", "png", 72, width=NA, "euclidean", "ward.D")
+mSet<-PlotHeatMap(mSet, "heatmap_0_", "png", 300, width=NA, "norm", "row", "euclidean", "ward.D","bwm", "overview", T, T, NA, T, F)
+
+# PLS-DA
+mSet<-PLSR.Anal(mSet, reg=TRUE)
+mSet<-PlotPLSPairSummary(mSet, "pls_pair_0_", "png", 72, width=NA, 5)
+mSet<-PlotPLS2DScore(mSet, "pls_score2d_0_", "png", 72, width=NA, 1,2,0.95,0,0)
+mSet<-PlotPLS3DScoreImg(mSet, "pls_score3d_0_", "png", 72, width=NA, 1,2,3, 40)
+mSet<-PlotPLSLoading(mSet, "pls_loading_0_", "png", 72, width=NA, 1, 2);
+mSet<-PlotPLS3DLoading(mSet, "pls_loading3d_0_", "json", 1,2,3)
+mSet<-PLSDA.CV(mSet, "L",4, "Q2")
+mSet<-PlotPLS.Classification(mSet, "pls_cv_0_", "png", 72, width=NA)
+mSet<-PlotPLS.Imp(mSet, "pls_imp_0_", "png", 72, width=NA, "vip", "Comp. 1", 15,FALSE)
+
+#Kmeans
+mSet<-Kmeans.Anal(mSet, 4)
+mSet<-PlotKmeans(mSet, "km_1_", "png", 150, width=NA)
+
+# Random Forest
+mSet<-RF.Anal(mSet, 1000,7,1)
+mSet<-PlotRF.Classify(mSet, "rf_cls_1_", "png", 72, width=NA)
+mSet<-PlotRF.VIP(mSet, "rf_imp_1_", "png", 72, width=NA)
+mSet<-PlotRF.Outlier(mSet, "rf_outlier_1_", "png", 72, width=NA)
+
+# Enrichment analysis
+mSet<-InitDataObjects("conc", "msetora", FALSE)
+cmpd.vec<-c("ribonic acid","isothreonic acid","isocitric acid","pyruvic acid","tryptophan","methionine")
+mSet<-Setup.MapData(mSet, cmpd.vec);
+mSet<-CrossReferencing(mSet, "name");
+mSet<-CreateMappingResultTable(mSet)
+mSet<-PerformDetailMatch(mSet, "isothreonic acid");
+mSet<-GetCandidateList(mSet);
+mSet<-SetCandidate(mSet, "isothreonic acid", "Threonic acid");
+mSet<-SetMetabolomeFilter(mSet, F);
+mSet<-SetCurrentMsetLib(mSet, "snp", 2);
+mSet<-CalculateHyperScore(mSet)
+mSet<-PlotORA(mSet, "ora_0_", "net", "png", 72, width=NA)
+mSet<-CalculateHyperScore(mSet)
+mSet<-PlotORA(mSet, "ora_1_", "net", "png", 72, width=NA)
+
+# Pathway Analysis
+mSet<-InitDataObjects("conc", "pathora", FALSE)
+cmpd.vec<-c("ribonic acid","isothreonic acid","isocitric acid","pyruvic acid","tryptophan","methionine")
+mSet<-Setup.MapData(mSet, cmpd.vec);
+mSet<-CrossReferencing(mSet, "name");
+mSet<-CreateMappingResultTable(mSet)
+mSet<-PerformDetailMatch(mSet, "isothreonic acid");
+mSet<-GetCandidateList(mSet);
+mSet<-SetCandidate(mSet, "isothreonic acid", "Threonic acid");
+mSet<-SetKEGG.PathLib(mSet, "bsu", "current")
+mSet<-SetMetabolomeFilter(mSet, F);
+mSet<-CalculateOraScore(mSet, "rbc", "hyperg")
+mSet<-PlotPathSummary(mSet, "path_view_0_", "png", 72, width=NA)
+```
 
 
 
