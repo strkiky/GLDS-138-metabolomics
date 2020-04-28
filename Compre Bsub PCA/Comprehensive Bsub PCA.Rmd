@@ -196,7 +196,7 @@ plotVar(MyResult.spca, cex = 3)
 # Pellet - Flight vs Ground
 X <- BsubFG[,3:ncol(BsubFG)]
 MyResult.spca <- spca(X, ncomp = 3, center = TRUE, keepX = c(18,15,12))
-plotIndiv(MyResult.spca, comp = c(2,3), legend = TRUE, title = 'B. subtilis - Flight vs Ground: sPCA',
+plotIndiv(MyResult.spca, comp = c(1,2), legend = TRUE, title = 'B. subtilis - Flight vs Ground: sPCA',
           group = BsubFG$Label, legend.title = 'Treatment',
           ellipse = TRUE, style = "ggplot2", ind.names = FALSE)
 plotVar(MyResult.spca, cex = 3)
@@ -228,6 +228,64 @@ summary(aov.models$`101299`)
 summary(aov.models$`5085`)
 summary(aov.models$`stearic acid`)
 ```
+#Partial Least Squares - Discriminant Analysis
+```{r}
+# set up
+X <- BsubFG[,-c(1:2)]
+Y <- BsubFG$Label
+summary(Y)
+dim(X)
+length(Y)
+
+# PLS-DA
+MyResult.plsda <- plsda(X,Y)
+plotIndiv(MyResult.plsda)
+plotVar(MyResult.plsda, cutoff = 0.75)
+
+# sPLS-DA
+MyResult.splsda <- splsda(X, Y, keepX = c(60,60))
+plotIndiv(MyResult.splsda, ind.names = FALSE, legend = TRUE,
+          ellipse = TRUE, star = TRUE, title = 'Spaceflight B. subtilis: sPLS-DA',
+          X.label = 'PLS-DA 1', Y.label = 'PLS-DA 2')
+plotVar(MyResult.splsda, cutoff = 0.85)
+selectVar(MyResult.splsda, comp = 1)$name
+
+# Background prediction
+background <- background.predict(MyResult.splsda, comp.predicted = 2,
+                                 dist = "max.dist")
+plotIndiv(MyResult.splsda, comp = 1:2, group = BsubFG$Label,
+          ind.names = FALSE, title = "Maximum distance",
+          legend = TRUE,  background = background)
+
+# ROC - check for ability to predict classification
+aud.plsda <- auroc(MyResult.splsda)
+
+# Variable selection output
+MyResult.splsda2 <- splsda(X, Y, ncomp = 3, keepX = c(38,19,9))
+selectVar(MyResult.splsda2, comp = 1)$value
+plotLoadings(MyResult.splsda2, contrib = 'max', method = 'mean')
+plotIndiv(MyResult.splsda2, style="3d")
+
+# Anova test on pls-da's top variables
+plsda_data <- BsubFG[,c("Label", "ribonic acid", "methionine", "110014", "223522", "128027", "224109")]
+library(tidyverse)
+plsda_data %>% pivot_longer(-Label, names_to = "Metabolite", values_to = "value") %>%
+  mutate(Metabolite = factor(Metabolite, levels = c("ribonic acid", "methionine", "110014", "223522", "128027", "224109"))) %>%
+  ggplot(aes(x = Label, y = value, color = Metabolite)) +
+  geom_boxplot() +
+  facet_wrap(~Metabolite)
+
+#
+aov.plsda.models = plsda_data[ , -grep("Label", names(plsda_data))] %>%
+  map(~ aov(.~ plsda_data$Label))
+summary(aov.plsda.models$`ribonic acid`)
+summary(aov.plsda.models$`methionine`)
+summary(aov.plsda.models$`110014`)
+summary(aov.plsda.models$`223522`)
+summary(aov.plsda.models$`128027`)
+summary(aov.plsda.models$`224109`)
+```
+
 # MetaboAnalyst0
 ```{r}
 setwd("C:/Users/strki/Documents/Git_R/GLDS-138 metabolomics/GLDS-138-metabolomics/Compre Bsub PCA")
@@ -352,63 +410,6 @@ Ldata <- Ldata[c(19:36),]
 Ldata <- Ldata[,-c(1:2)]
 rownames(Ldata) <- rowNameE
 ```
-#Partial Least Squares - Discriminant Analysis
-```{r}
-# set up
-X <- mdat
-Y <- BsubFG$Label
-summary(Y)
-dim(X)
-length(Y)
-
-# PLS-DA
-MyResult.plsda <- plsda(X,Y)
-plotIndiv(MyResult.plsda)
-plotVar(MyResult.plsda, cutoff = 0.75)
-
-# sPLS-DA
-MyResult.splsda <- splsda(X, Y, keepX = c(60,60))
-plotIndiv(MyResult.splsda, ind.names = FALSE, legend = TRUE,
-          ellipse = TRUE, star = TRUE, title = 'Spaceflight B. subtilis: sPLS-DA',
-          X.label = 'PLS-DA 1', Y.label = 'PLS-DA 2')
-plotVar(MyResult.splsda, cutoff = 0.85)
-selectVar(MyResult.splsda, comp = 1)$name
-
-# Background prediction
-background <- background.predict(MyResult.splsda, comp.predicted = 2,
-                                 dist = "max.dist")
-plotIndiv(MyResult.splsda, comp = 1:2, group = BsubFG$Label,
-          ind.names = FALSE, title = "Maximum distance",
-          legend = TRUE,  background = background)
-
-# ROC - check for ability to predict classification
-aud.plsda <- auroc(MyResult.splsda)
-
-# Variable selection output
-MyResult.splsda2 <- splsda(X, Y, ncomp = 3, keepX = c(38,19,9))
-selectVar(MyResult.splsda2, comp = 1)$value
-plotLoadings(MyResult.splsda2, contrib = 'max', method = 'mean')
-plotIndiv(MyResult.splsda2, style="3d")
-
-# Anova test on pls-da's top variables
-plsda_data <- BsubFG[,c("Label", "ribonic acid", "methionine", "110014", "223522", "128027", "224109")]
-library(tidyverse)
-plsda_data %>% pivot_longer(-Label, names_to = "Metabolite", values_to = "value") %>%
-  mutate(Metabolite = factor(Metabolite, levels = c("ribonic acid", "methionine", "110014", "223522", "128027", "224109"))) %>%
-  ggplot(aes(x = Label, y = value, color = Metabolite)) +
-  geom_boxplot() +
-  facet_wrap(~Metabolite)
-
-aov.plsda.models = plsda_data[ , -grep("Label", names(plsda_data))] %>%
-  map(~ aov(.~ plsda_data$Label))
-summary(aov.plsda.models$`ribonic acid`)
-summary(aov.plsda.models$`methionine`)
-summary(aov.plsda.models$`110014`)
-summary(aov.plsda.models$`223522`)
-summary(aov.plsda.models$`128027`)
-summary(aov.plsda.models$`224109`)
-```
-
 # Projection to Latent Structure (PLS)
 ```{r}
 #quick start on PLS
