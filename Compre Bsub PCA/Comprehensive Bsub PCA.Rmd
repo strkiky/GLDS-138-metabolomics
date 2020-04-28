@@ -300,6 +300,7 @@ X11()
 cim(MyResult.splsda.final, comp = 1, title = "Component 1")
 plotArrow(MyResult.splsda.final, legend=T)
 
+# take a look at the boxplot anyway
 splsda_metab <- BsubFG[,c("Label", "ribonic acid", "methionine", "110014", "223522", "128027", "224109")]
 library(tidyverse)
 splsda_metab %>% pivot_longer(-Label, names_to = "Metabolite", values_to = "value") %>%
