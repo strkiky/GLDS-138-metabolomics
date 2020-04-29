@@ -228,6 +228,58 @@ summary(aov.models$`101299`)
 summary(aov.models$`5085`)
 summary(aov.models$`stearic acid`)
 ```
+# Independent Principal Component Analysis
+```{r}
+X <- GLDS138.as[,4:ncol(GLDS138.as)]
+MyResult.ipca <- ipca(X, ncomp = 3, mode ="deflation")
+plotIndiv(MyResult.ipca, comp = c(1,2), legend = TRUE, title = 'GLDS138: IPCA',
+          group = GLDS138.as$Label, legend.title = 'Treatment',
+          ellipse = FALSE, style = "ggplot2", ind.names = FALSE, 
+          pch = GLDS138.as$species, legend.title.pch = 'Species')
+plotVar(MyResult.ipca, pch = 20)
+plotVar(MyResult.ipca, cutoff = 0.8)
+MyResult.pca$kurtosis 
+
+# B subtilis
+X <- Bsub.as[,3:ncol(Bsub.as)]
+MyResult.ipca <- ipca(X, ncomp = 3, mode="deflation")
+plotIndiv(MyResult.ipca, comp = c(1,2), legend = TRUE, title = 'B. subtilis: IPCA',
+          group = Bsub.as$Label, legend.title = 'Treatment',
+          ellipse = TRUE, style = "ggplot2", ind.names = FALSE)
+plotVar(MyResult.ipca, cutoff = 0.8)
+MyResult.ipca$kurtosis 
+
+# Media and pellet
+X <- BsubMP[,3:ncol(BsubMP)]
+MyResult.ipca <- ipca(X, ncomp = 3, mode="deflation")
+plotIndiv(MyResult.ipca, comp = c(1,2), legend = TRUE, title = 'B. subtilis - Media vs Pellet: IPCA',
+          group = BsubMP$Label, legend.title = 'Treatment',
+          ellipse = TRUE, style = "ggplot2", ind.names = FALSE)
+plotVar(MyResult.ipca, cutoff = 0.8)
+MyResult.ipca$kurtosis 
+
+# Pellet - Flight vs Ground
+X <- BsubFG[,3:ncol(BsubFG)]
+MyResult.ipca <- ipca(X, ncomp = 4, mode="deflation")
+plotIndiv(MyResult.ipca, comp = c(1,2), legend = TRUE, title = 'B. subtilis - Flight vs Ground: IPCA',
+          group = BsubFG$Label, legend.title = 'Treatment',
+          ellipse = TRUE, style = "ggplot2", ind.names = FALSE)
+plotIndiv(MyResult.ipca, comp = c(1,2,3), legend = TRUE, title = 'B. subtilis - Flight vs Ground: IPCA',
+          group = BsubFG$Label, legend.title = 'Treatment',
+          ellipse = TRUE, style = "3d", ind.names = FALSE)
+plotVar(MyResult.ipca, cutoff = 0.8)
+MyResult.ipca$kurtosis 
+
+# Media - Flight vs Ground
+X <- BsubMd[,3:ncol(BsubMd)]
+MyResult.ipca <- ipca(X, ncomp = 3, mode="deflation")
+plotIndiv(MyResult.ipca, comp = c(1,2), legend = TRUE, 
+          title = 'B. subtilis consumed media - Flight vs Ground: IPCA',
+          group = BsubMd$Label, legend.title = 'Treatment',
+          ellipse = TRUE, style = "ggplot2", ind.names = FALSE)
+plotVar(MyResult.ipca, cutoff = 0.8)
+MyResult.ipca$kurtosis 
+```
 #Partial Least Squares - Discriminant Analysis
 ```{r}
 # set up
