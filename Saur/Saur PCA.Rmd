@@ -71,24 +71,20 @@ MyResult.pca <- pca(X, ncomp = 4, center = TRUE)
 plotIndiv(MyResult.pca, comp = c(1,2), legend = TRUE, title = 'B. subtilis - Flight vs Ground: PCA',
           group = SaurFG$Label, legend.title = 'Treatment',
           ellipse = TRUE, style = "ggplot2", ind.names = FALSE)
-plotVar(MyResult.pca, cutoff = 0.8)
+plotVar(MyResult.pca, cutoff = 0.85)
 MyResult.pca 
 
 # Media - Flight vs Ground
 X <- SaurMd[,3:ncol(SaurMd)]
 MyResult.pca <- pca(X, ncomp = 3, center = TRUE)
-plotIndiv(MyResult.pca, comp = c(1,2), legend = TRUE, title = 'B. subtilis consumed media - Flight vs Ground: PCA',
+plotIndiv(MyResult.pca, comp = c(1,2), legend = TRUE, 
+          title = 'B. subtilis consumed media - Flight vs Ground: PCA',
           group = SaurMd$Label, legend.title = 'Treatment',
           ellipse = TRUE, style = "ggplot2", ind.names = FALSE)
 plotVar(MyResult.pca, cutoff = 0.8)
 MyResult.pca 
 
 # top metabolites of PC1
-#metab_scores <- abs(MyResult.pca$rotation[,1])
-#metab_score_ranked <- sort(metab_scores, decreasing = TRUE)
-#top_10_metab <- names(metab_score_ranked[1:10])
-#MyResult.pca$rotation[top_10_metab,1]
-
 top_10_metab <- names(sort(abs(MyResult.pca$rotation[,1]), decreasing = TRUE)[1:10])
 MyResult.pca$rotation[top_10_metab,1]
 
@@ -100,8 +96,143 @@ MyResult.pca$rotation[top_10_metab,1]
 top_10_metab <- names(sort(abs(MyResult.pca$rotation[,3]), decreasing = TRUE)[1:10])
 MyResult.pca$rotation[top_10_metab,1]
 ```
+# Independent Principal Component Analysis
+```{r}
+X <- GLDS138.as[,4:ncol(GLDS138.as)]
+MyResult.ipca <- ipca(X, ncomp = 3, mode ="deflation")
+plotIndiv(MyResult.ipca, comp = c(1,2), legend = TRUE, title = 'GLDS138: IPCA',
+          group = GLDS138.as$Label, legend.title = 'Treatment',
+          ellipse = FALSE, style = "ggplot2", ind.names = FALSE, 
+          pch = GLDS138.as$species, legend.title.pch = 'Species')
+plotVar(MyResult.ipca, pch = 20)
+plotVar(MyResult.ipca, cutoff = 0.8)
+MyResult.pca$kurtosis 
 
+# S. aureus
+X <- Saur.as[,3:ncol(Saur.as)]
+MyResult.ipca <- ipca(X, ncomp = 3, mode="deflation")
+plotIndiv(MyResult.ipca, comp = c(1,2), legend = TRUE, title = 'S. aureus: IPCA',
+          group = Saur.as$Label, legend.title = 'Treatment',
+          ellipse = TRUE, style = "ggplot2", ind.names = FALSE)
+plotVar(MyResult.ipca, cutoff = 0.8)
+MyResult.ipca$kurtosis 
 
+# Media and pellet
+X <- SaurMP[,3:ncol(SaurMP)]
+MyResult.ipca <- ipca(X, ncomp = 3, mode="deflation")
+plotIndiv(MyResult.ipca, comp = c(1,2), legend = TRUE, title = 'S. aureus - Media vs Pellet: IPCA',
+          group = SaurMP$Label, legend.title = 'Treatment',
+          ellipse = TRUE, style = "ggplot2", ind.names = FALSE)
+plotVar(MyResult.ipca, cutoff = 0.8)
+MyResult.ipca$kurtosis 
+
+# Pellet - Flight vs Ground
+X <- SaurFG[,3:ncol(SaurFG)]
+MyResult.ipca <- ipca(X, ncomp = 4, mode="deflation")
+plotIndiv(MyResult.ipca, comp = c(1,2), legend = TRUE, title = 'S. aureus - Flight vs Ground: IPCA',
+          group = SaurFG$Label, legend.title = 'Treatment',
+          ellipse = TRUE, style = "ggplot2", ind.names = FALSE)
+plotIndiv(MyResult.ipca, comp = c(1,2,3), legend = TRUE, title = 'S. aureus - Flight vs Ground: IPCA',
+          group = SaurFG$Label, legend.title = 'Treatment',
+          ellipse = TRUE, style = "3d", ind.names = FALSE)
+plotVar(MyResult.ipca, cutoff = 0.8)
+MyResult.ipca$kurtosis 
+
+# Media - Flight vs Ground
+X <- SaurMd[,3:ncol(SaurMd)]
+MyResult.ipca <- ipca(X, ncomp = 3, mode="deflation")
+plotIndiv(MyResult.ipca, comp = c(1,2), legend = TRUE, 
+          title = 'S. aureus consumed media - Flight vs Ground: IPCA',
+          group = SaurMd$Label, legend.title = 'Treatment',
+          ellipse = TRUE, style = "ggplot2", ind.names = FALSE)
+plotVar(MyResult.ipca, cutoff = 0.8)
+MyResult.ipca$kurtosis 
+```
+
+#Partial Least Squares - Discriminant Analysis
+```{r}
+# set up
+X <- BsubFG[,-c(1:2)]
+Y <- BsubFG$Label
+summary(Y)
+dim(X)
+length(Y)
+
+# PLS-DA
+MyResult.plsda <- plsda(X,Y)
+plotIndiv(MyResult.plsda, legend = TRUE,
+          ellipse = TRUE, star = TRUE, title = 'Spaceflight B. subtilis: PLS-DA')
+plotVar(MyResult.plsda, cutoff = 0.75)
+plotLoadings(MyResult.plsda, comp = 1, title = 'Loadings on comp 1: PLS-DA', 
+             contrib = 'max', method = 'mean', ndisplay = 20)
+
+# sPLS-DA
+MyResult.splsda <- splsda(X, Y, keepX = c(60,60))
+plotIndiv(MyResult.splsda, ind.names = FALSE, legend = TRUE,
+          ellipse = TRUE, star = TRUE, title = 'Spaceflight B. subtilis: sPLS-DA',
+          X.label = 'PLS-DA 1', Y.label = 'PLS-DA 2')
+plotVar(MyResult.splsda, cutoff = 0.85)
+selectVar(MyResult.splsda, comp = 1)$name
+
+# Background prediction
+background <- background.predict(MyResult.splsda, comp.predicted = 2,
+                                 dist = "max.dist")
+plotIndiv(MyResult.splsda, comp = 1:2, group = BsubFG$Label,
+          ind.names = FALSE, title = "Maximum distance",
+          legend = TRUE,  background = background)
+
+# Variable selection output
+MyResult.splsda2 <- splsda(X, Y, ncomp = 3, keepX = c(38,19,9))
+selectVar(MyResult.splsda2, comp = 1)$value
+plotLoadings(MyResult.splsda2, contrib = 'max', method = 'mean')
+plotIndiv(MyResult.splsda2, style="3d")
+
+##  Tuning parameters and numerical outputs
+# check the best number of components to use 
+MyResult.splsda2 <- plsda(X, Y, ncomp = 5)
+MyPerf.plsda <- perf(MyResult.splsda2, validation = "Mfold", folds = 3,
+                     progressBar = FALSE, nrepeat = 50)
+plot(MyPerf.plsda, col = color.mixo(5:7), sd = TRUE, legend.position = "horizontal") # looks to be 2 components
+
+list.keepX <- c(5:10,  seq(20, 100, 10))
+list.keepX # output the grid of values tested
+
+tune.splsda.srbct <- tune.splsda(X, Y, ncomp = 3, 
+                                 validation = 'Mfold',
+                                 folds = 3, dist = 'max.dist', progressBar = FALSE,
+                                 measure = "BER", test.keepX = list.keepX,
+                                 nrepeat = 50)
+error <- tune.splsda.srbct$error.rate
+ncomp <- tune.splsda.srbct$choice.ncomp$ncomp # optimal number of components based on t-tests on the error rate
+ncomp # confirmed to be 1.
+# check the number of metabolites to keep per component
+select.keepX <- tune.splsda.srbct$choice.keepX[1:ncomp]  # optimal number of variables to select
+select.keepX 
+select.keepX <- tune.splsda.srbct$choice.keepX[1:2]  # optimal no of variables for 2 components
+select.keepX
+
+plot(tune.splsda.srbct, col = color.jet(3))
+
+# The final graph - we have to use two component 
+MyResult.splsda.final <- splsda(X, Y, ncomp = 2, keepX = select.keepX)
+plotIndiv(MyResult.splsda.final, ind.names = FALSE, legend=TRUE,
+          ellipse = TRUE, title="sPLS-DA - final result")
+
+plotLoadings(MyResult.splsda.final, comp = 1, title = 'Loadings on comp 1', 
+             contrib = 'max', method = 'mean')
+X11()
+cim(MyResult.splsda.final, comp = 1, title = "Component 1")
+plotArrow(MyResult.splsda.final, legend=T)
+
+# take a look at the boxplot anyway
+splsda_metab <- BsubFG[,c("Label", "ribonic acid", "methionine", "110014", "223522", "128027", "224109")]
+library(tidyverse)
+splsda_metab %>% pivot_longer(-Label, names_to = "Metabolite", values_to = "value") %>%
+  mutate(Metabolite = factor(Metabolite, levels = c("ribonic acid", "methionine", "110014", "223522", "128027", "224109"))) %>%
+  ggplot(aes(x = Label, y = value, color = Metabolite)) +
+  geom_boxplot() +
+  facet_wrap(~Metabolite)
+```
 
 
 
