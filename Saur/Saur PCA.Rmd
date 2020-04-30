@@ -106,7 +106,7 @@ plotIndiv(MyResult.ipca, comp = c(1,2), legend = TRUE, title = 'GLDS138: IPCA',
           pch = GLDS138.as$species, legend.title.pch = 'Species')
 plotVar(MyResult.ipca, pch = 20)
 plotVar(MyResult.ipca, cutoff = 0.8)
-MyResult.pca$kurtosis 
+MyResult.ipca$kurtosis 
 
 # S. aureus
 X <- Saur.as[,3:ncol(Saur.as)]
