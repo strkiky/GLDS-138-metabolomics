@@ -90,11 +90,11 @@ MyResult.pca$rotation[top_10_metab,1]
 
 # top metabolites for PC2
 top_10_metab <- names(sort(abs(MyResult.pca$rotation[,2]), decreasing = TRUE)[1:10])
-MyResult.pca$rotation[top_10_metab,1]
+MyResult.pca$rotation[top_10_metab,2]
 
 # top metabolites for PC3
 top_10_metab <- names(sort(abs(MyResult.pca$rotation[,3]), decreasing = TRUE)[1:10])
-MyResult.pca$rotation[top_10_metab,1]
+MyResult.pca$rotation[top_10_metab,3]
 ```
 # Independent Principal Component Analysis
 ```{r}
@@ -148,7 +148,39 @@ plotIndiv(MyResult.ipca, comp = c(1,2), legend = TRUE,
 plotVar(MyResult.ipca, cutoff = 0.8)
 MyResult.ipca$kurtosis 
 ```
+# sIPCA and others
+```{r}
+# Media and pellet
+X <- SaurMP[,3:ncol(SaurMP)]
+MyResult.sipca <- sipca(X, ncomp = 3, mode="deflation", keepX = c(50,50,50))
+plotIndiv(MyResult.sipca, comp = c(1,2), legend = TRUE, title = 'S. aureus - Media vs Pellet: IPCA',
+          group = SaurMP$Label, legend.title = 'Treatment',
+          ellipse = TRUE, style = "ggplot2", ind.names = FALSE)
+plotVar(MyResult.sipca, cutoff = 0.8)
+MyResult.sipca$kurtosis 
 
+# Pellet - Flight vs Ground
+X <- SaurFG[,3:ncol(SaurFG)]
+MyResult.sipca <- sipca(X, ncomp = 4, mode="deflation", keepX = c(50,50,50,50))
+plotIndiv(MyResult.sipca, comp = c(1,2), legend = TRUE, title = 'S. aureus - Flight vs Ground: IPCA',
+          group = SaurFG$Label, legend.title = 'Treatment',
+          ellipse = TRUE, style = "ggplot2", ind.names = FALSE)
+plotIndiv(MyResult.sipca, comp = c(1,2,3), legend = TRUE, title = 'S. aureus - Flight vs Ground: IPCA',
+          group = SaurFG$Label, legend.title = 'Treatment',
+          ellipse = TRUE, style = "3d", ind.names = FALSE)
+plotVar(MyResult.sipca, cutoff = 0.8)
+MyResult.sipca$kurtosis 
+
+# Media - Flight vs Ground
+X <- SaurMd[,3:ncol(SaurMd)]
+MyResult.sipca <- sipca(X, ncomp = 3, mode="deflation", keepX = c(50,50,50))
+plotIndiv(MyResult.sipca, comp = c(1,2), legend = TRUE, 
+          title = 'S. aureus consumed media - Flight vs Ground: IPCA',
+          group = SaurMd$Label, legend.title = 'Treatment',
+          ellipse = TRUE, style = "ggplot2", ind.names = FALSE)
+plotVar(MyResult.sipca, cutoff = 0.8)
+MyResult.sipca$kurtosis 
+```
 #Partial Least Squares - Discriminant Analysis
 ```{r}
 # set up
