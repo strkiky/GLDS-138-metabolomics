@@ -25,6 +25,7 @@ BsubMP$Label <- factor(BsubMP$Label)
 
 # Just Pellet - the bacteria - comparison of just flight vs ground
 BsubFG <- BsubMP[c(19:36),]
+BsubFG$Label <- factor(BsubFG$Label)
 
 # Just Media consumed by the bacteria - F vs G
 BsubMd <- BsubMP[c(1:18),]
@@ -67,10 +68,10 @@ MyResult.pca
 # Pellet - Flight vs Ground
 X <- BsubFG[,3:ncol(BsubFG)]
 MyResult.pca <- pca(X, ncomp = 4, center = TRUE)
-plotIndiv(MyResult.pca, comp = c(1,2), legend = TRUE, title = 'B. subtilis - Flight vs Ground: PCA',
+plotIndiv(MyResult.pca, comp = c(2,3), legend = TRUE, title = 'B. subtilis - Flight vs Ground: PCA',
           group = BsubFG$Label, legend.title = 'Treatment',
           ellipse = TRUE, style = "ggplot2", ind.names = FALSE)
-plotIndiv(MyResult.pca, comp = c(1,2,3), legend = TRUE, title = 'B. subtilis - Flight vs Ground: PCA',
+plotIndiv(MyResult.pca, comp = c(2,3,4), legend = TRUE, title = 'B. subtilis - Flight vs Ground: PCA',
           group = BsubFG$Label, legend.title = 'Treatment',
           ellipse = TRUE, style = "3d", ind.names = FALSE)
 plotVar(MyResult.pca, cutoff = 0.8)
