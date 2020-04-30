@@ -238,7 +238,7 @@ plotIndiv(MyResult.ipca, comp = c(1,2), legend = TRUE, title = 'GLDS138: IPCA',
           pch = GLDS138.as$species, legend.title.pch = 'Species')
 plotVar(MyResult.ipca, pch = 20)
 plotVar(MyResult.ipca, cutoff = 0.8)
-MyResult.pca$kurtosis 
+MyResult.ipca$kurtosis 
 
 # B subtilis
 X <- Bsub.as[,3:ncol(Bsub.as)]
@@ -256,7 +256,7 @@ plotIndiv(MyResult.ipca, comp = c(1,2), legend = TRUE, title = 'B. subtilis - Me
           group = BsubMP$Label, legend.title = 'Treatment',
           ellipse = TRUE, style = "ggplot2", ind.names = FALSE)
 plotVar(MyResult.ipca, cutoff = 0.8)
-MyResult.ipca$kurtosis 
+MyResult.ipca$kurtosis # two components
 
 # Pellet - Flight vs Ground
 X <- BsubFG[,3:ncol(BsubFG)]
@@ -268,7 +268,7 @@ plotIndiv(MyResult.ipca, comp = c(1,2,3), legend = TRUE, title = 'B. subtilis - 
           group = BsubFG$Label, legend.title = 'Treatment',
           ellipse = TRUE, style = "3d", ind.names = FALSE)
 plotVar(MyResult.ipca, cutoff = 0.8)
-MyResult.ipca$kurtosis 
+MyResult.ipca$kurtosis # first two components
 
 # Media - Flight vs Ground
 X <- BsubMd[,3:ncol(BsubMd)]
@@ -279,6 +279,55 @@ plotIndiv(MyResult.ipca, comp = c(1,2), legend = TRUE,
           ellipse = TRUE, style = "ggplot2", ind.names = FALSE)
 plotVar(MyResult.ipca, cutoff = 0.8)
 MyResult.ipca$kurtosis 
+```
+#sIPCA and others
+```{r}
+# Media and pellet
+X <- BsubMP[,3:ncol(BsubMP)]
+MyResult.sipca <- sipca(X, ncomp = 3, mode="deflation", keepX = c(50,50,50))
+plotIndiv(MyResult.sipca, comp = c(1,2), legend = TRUE, title = 'B. subtilis - Media vs Pellet: IPCA',
+          group = BsubMP$Label, legend.title = 'Treatment',
+          ellipse = TRUE, style = "ggplot2", ind.names = FALSE)
+plotVar(MyResult.sipca, cutoff = 0.8)
+MyResult.sipca$kurtosis 
+
+# Pellet - Flight vs Ground
+X <- BsubFG[,3:ncol(BsubFG)]
+MyResult.sipca <- sipca(X, ncomp = 3, mode="deflation", keepX = c(50,50,50))
+plotIndiv(MyResult.sipca, comp = c(1,2), legend = TRUE, title = 'B. subtilis - Flight vs Ground: IPCA',
+          group = BsubFG$Label, legend.title = 'Treatment',
+          ellipse = TRUE, style = "ggplot2", ind.names = FALSE)
+plotIndiv(MyResult.sipca, comp = c(1,2,3), legend = TRUE, title = 'B. subtilis - Flight vs Ground: IPCA',
+          group = BsubFG$Label, legend.title = 'Treatment',
+          ellipse = TRUE, style = "3d", ind.names = FALSE)
+plotVar(MyResult.sipca, cutoff = 0.8)
+MyResult.sipca$kurtosis 
+
+# top metabolites of PC1
+top_10_metab <- names(sort(abs(MyResult.sipca$rotation[,1]), decreasing = TRUE)[1:10])
+MyResult.sipca$rotation[top_10_metab,1]
+
+# top metabolites for PC2
+top_10_metab <- names(sort(abs(MyResult.sipca$rotation[,2]), decreasing = TRUE)[1:10])
+MyResult.sipca$rotation[top_10_metab,2]
+
+# checking these metabolites
+anova_data <- BsubFG[,c("Label", "110647", "5085", "160843", "101299", "O-acetylserine", "stearic acid")]
+library(tidyverse)
+anova_data %>% pivot_longer(-Label, names_to = "Metabolite", values_to = "value") %>%
+  mutate(Metabolite = factor(Metabolite, levels = c("110647", "5085", "160843", "101299", "O-acetylserine", "stearic acid"))) %>%
+  ggplot(aes(x = Label, y = value, color = Metabolite)) +
+  geom_boxplot() +
+  facet_wrap(~Metabolite)
+
+aov.models = anova_data[ , -grep("Label", names(anova_data))] %>%
+  map(~ aov(.~ anova_data$Label))
+summary(aov.models$`110647`)
+summary(aov.models$`5085`)
+summary(aov.models$`160843`)
+summary(aov.models$`101299`)
+summary(aov.models$`O-acetylserine`)
+summary(aov.models$`stearic acid`)
 ```
 #Partial Least Squares - Discriminant Analysis
 ```{r}
