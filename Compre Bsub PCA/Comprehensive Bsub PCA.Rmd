@@ -312,22 +312,25 @@ top_10_metab <- names(sort(abs(MyResult.sipca$rotation[,2]), decreasing = TRUE)[
 MyResult.sipca$rotation[top_10_metab,2]
 
 # checking these metabolites
-anova_data <- BsubFG[,c("Label", "110647", "5085", "160843", "101299", "O-acetylserine", "stearic acid")]
+anova_data <- BsubFG[,c("Label", "210885", "101299", "120996", "stearic acid", "O-acetylserine", "250544", "160843", "110129","5085")]
 library(tidyverse)
 anova_data %>% pivot_longer(-Label, names_to = "Metabolite", values_to = "value") %>%
-  mutate(Metabolite = factor(Metabolite, levels = c("110647", "5085", "160843", "101299", "O-acetylserine", "stearic acid"))) %>%
+  mutate(Metabolite = factor(Metabolite, levels = c("210885", "101299", "120996", "stearic acid", "O-acetylserine", "250544", "160843", "110129","5085"))) %>%
   ggplot(aes(x = Label, y = value, color = Metabolite)) +
   geom_boxplot() +
   facet_wrap(~Metabolite)
 
 aov.models = anova_data[ , -grep("Label", names(anova_data))] %>%
   map(~ aov(.~ anova_data$Label))
-summary(aov.models$`110647`)
-summary(aov.models$`5085`)
-summary(aov.models$`160843`)
+summary(aov.models$`210885`)
 summary(aov.models$`101299`)
-summary(aov.models$`O-acetylserine`)
+summary(aov.models$`120996`)
 summary(aov.models$`stearic acid`)
+summary(aov.models$`O-acetylserine`)
+summary(aov.models$`250544`)
+summary(aov.models$`160843`)
+summary(aov.models$`110129`)
+summary(aov.models$`5085`)
 ```
 #Partial Least Squares - Discriminant Analysis
 ```{r}
