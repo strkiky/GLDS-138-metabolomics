@@ -230,6 +230,7 @@ summary(aov.models$`stearic acid`)
 ```
 # Independent Principal Component Analysis
 ```{r}
+library(mixOmics)
 X <- GLDS138.as[,4:ncol(GLDS138.as)]
 MyResult.ipca <- ipca(X, ncomp = 3, mode ="deflation")
 plotIndiv(MyResult.ipca, comp = c(1,2), legend = TRUE, title = 'GLDS138: IPCA',
@@ -248,6 +249,11 @@ plotIndiv(MyResult.ipca, comp = c(1,2), legend = TRUE, title = 'B. subtilis: IPC
           ellipse = TRUE, style = "ggplot2", ind.names = FALSE)
 plotVar(MyResult.ipca, cutoff = 0.8)
 MyResult.ipca$kurtosis 
+hist(MyResult.ipca$loadings$X[,1])
+hist(MyResult.ipca$loadings$X[,2])
+hist(MyResult.ipca$loadings$X[,3])
+MyResult.ipca
+
 
 # Media and pellet
 X <- BsubMP[,3:ncol(BsubMP)]
@@ -257,6 +263,7 @@ plotIndiv(MyResult.ipca, comp = c(1,2), legend = TRUE, title = 'B. subtilis - Me
           ellipse = TRUE, style = "ggplot2", ind.names = FALSE)
 plotVar(MyResult.ipca, cutoff = 0.8)
 MyResult.ipca$kurtosis # two components
+
 
 # Pellet - Flight vs Ground
 X <- BsubFG[,3:ncol(BsubFG)]
@@ -269,6 +276,9 @@ plotIndiv(MyResult.ipca, comp = c(1,2,3), legend = TRUE, title = 'B. subtilis - 
           ellipse = TRUE, style = "3d", ind.names = FALSE)
 plotVar(MyResult.ipca, cutoff = 0.8)
 MyResult.ipca$kurtosis # first two components
+hist(MyResult.ipca$loadings$X[,1])
+hist(MyResult.ipca$loadings$X[,2])
+hist(MyResult.ipca$loadings$X[,3])
 
 # Media - Flight vs Ground
 X <- BsubMd[,3:ncol(BsubMd)]
