@@ -11,8 +11,12 @@ editor_options:
 knitr::opts_chunk$set(echo = TRUE)
 ```
 ```{r}
+setwd("C:/Users/strki/Documents/Git_R/GLDS-138 metabolomics/GLDS-138-metabolomics/lipidomics")
 # set up
 GLDS138.lipid.as <- read.csv("GLDS138.lipid.as.csv", check.names = FALSE, header = TRUE)
+GLDS138.lipid.as$Label <- factor(GLDS138.lipid.as$Label)
+GLDS138.lipid.as$Species <- factor(GLDS138.lipid.as$Species)
+dim(GLDS138.lipid.as)
 utils::View(GLDS138.lipid.as)
 
 # Just B. subtilis
@@ -40,9 +44,9 @@ library(mixOmics)
 X <- GLDS138.lipid.as[,4:ncol(GLDS138.lipid.as)]
 MyResult.pca <- pca(X, ncomp = 3, center = TRUE)
 plotIndiv(MyResult.pca, comp = c(1,2), legend = TRUE, title = 'GLDS138: PCA',
-          group = GLDS138.as$Label, legend.title = 'Treatment',
+          group = GLDS138.lipid.as$Label, legend.title = 'Treatment',
           ellipse = FALSE, style = "ggplot2", ind.names = FALSE, 
-          pch = GLDS138.as$species, legend.title.pch = 'Species')
+          pch = GLDS138.lipid.as$Species, legend.title.pch = 'Species')
 plotVar(MyResult.pca)
 plotVar(MyResult.pca, cutoff = 0.8)
 MyResult.pca 
@@ -68,13 +72,13 @@ MyResult.pca
 # Pellet - Flight vs Ground
 X <- BsubFG[,3:ncol(BsubFG)]
 MyResult.pca <- pca(X, ncomp = 4, center = TRUE)
-plotIndiv(MyResult.pca, comp = c(2,3), legend = TRUE, title = 'B. subtilis - Flight vs Ground: PCA',
+plotIndiv(MyResult.pca, comp = c(1,2), legend = TRUE, title = 'B. subtilis - Flight vs Ground: PCA',
           group = BsubFG$Label, legend.title = 'Treatment',
           ellipse = TRUE, style = "ggplot2", ind.names = FALSE)
-plotIndiv(MyResult.pca, comp = c(2,3,4), legend = TRUE, title = 'B. subtilis - Flight vs Ground: PCA',
+plotIndiv(MyResult.pca, comp = c(1,2,3), legend = TRUE, title = 'B. subtilis - Flight vs Ground: PCA',
           group = BsubFG$Label, legend.title = 'Treatment',
           ellipse = TRUE, style = "3d", ind.names = FALSE)
-plotVar(MyResult.pca, cutoff = 0.8)
+plotVar(MyResult.pca, cutoff = 0.85)
 MyResult.pca 
 
 # Media - Flight vs Ground
