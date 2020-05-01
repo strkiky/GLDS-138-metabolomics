@@ -1,0 +1,50 @@
+---
+title: "Bsub transcriptomics"
+author: "Yen-Kai Chen"
+date: "01/05/2020"
+output: word_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+```{r}
+# Set up transcriptomic data
+setwd("C:/Users/strki/Documents/Git_R/GLDS-138 metabolomics/GLDS-138-metabolomics/lipidomics")
+file_url <- "https://genelab-data.ndc.nasa.gov/genelab/static/media/dataset/GLDS-138_rna_seq_Normalized_Counts.csv?version=1"
+GLDS138RNA = 'GLDS-138_rna_seq_Normalized_Counts.csv'
+download.file(file_url, GLDS138RNA)
+edata <- read.csv(GLDS138RNA, stringsAsFactors = FALSE)
+
+dim(edata)
+rowName <- edata[,1]
+rownames(edata) <- rowName
+edata <- edata[,-1]
+colnames(edata) <- substr(colnames(edata),start=16,stop=23)
+edata <- as.data.frame(edata)
+edata <- t(edata)
+rowNameE <- rownames(edata)
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+```{r}
+devtools::session_info()
+```
