@@ -68,7 +68,7 @@ MyResult.pca
 # Pellet - Flight vs Ground
 X <- SaurFG[,3:ncol(SaurFG)]
 MyResult.pca <- pca(X, ncomp = 4, center = TRUE)
-plotIndiv(MyResult.pca, comp = c(1,2), legend = TRUE, title = 'B. subtilis - Flight vs Ground: PCA',
+plotIndiv(MyResult.pca, comp = c(1,2), legend = TRUE, title = 'S. aureus - Flight vs Ground: PCA',
           group = SaurFG$Label, legend.title = 'Treatment',
           ellipse = TRUE, style = "ggplot2", ind.names = FALSE)
 plotVar(MyResult.pca, cutoff = 0.85)
@@ -78,7 +78,7 @@ MyResult.pca
 X <- SaurMd[,3:ncol(SaurMd)]
 MyResult.pca <- pca(X, ncomp = 3, center = TRUE)
 plotIndiv(MyResult.pca, comp = c(1,2), legend = TRUE, 
-          title = 'B. subtilis consumed media - Flight vs Ground: PCA',
+          title = 'S. aureus consumed media - Flight vs Ground: PCA',
           group = SaurMd$Label, legend.title = 'Treatment',
           ellipse = TRUE, style = "ggplot2", ind.names = FALSE)
 plotVar(MyResult.pca, cutoff = 0.8)
