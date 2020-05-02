@@ -187,7 +187,7 @@ plotVar(MyResult.spca, cex = 3)
 
 # Media and pellet
 X <- BsubMP[,3:ncol(BsubMP)]
-MyResult.spca <- spca(X, ncomp = 3, center = TRUE, keepX = c(17,10,5))
+MyResult.spca <- spca(X, ncomp = 3, center = TRUE, keepX = c(50,50,50))
 plotIndiv(MyResult.spca, comp = c(1,2), legend = TRUE, title = 'B. subtilis - Media vs Pellet: sPCA',
           group = BsubMP$Label, legend.title = 'Treatment',
           ellipse = TRUE, style = "ggplot2", ind.names = FALSE)
@@ -310,7 +310,7 @@ plotIndiv(MyResult.sipca, comp = c(1,2,3), legend = TRUE, title = 'B. subtilis -
           group = BsubFG$Label, legend.title = 'Treatment',
           ellipse = TRUE, style = "3d", ind.names = FALSE)
 plotVar(MyResult.sipca, cutoff = 0.8)
-MyResult.sipca$kurtosis 
+MyResult.sipca$kurtosis
 
 # top metabolites of PC1
 top_10_metab <- names(sort(abs(MyResult.sipca$rotation[,1]), decreasing = TRUE)[1:10])
