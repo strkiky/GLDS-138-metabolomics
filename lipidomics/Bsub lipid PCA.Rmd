@@ -104,7 +104,36 @@ top_10_metab <- names(sort(abs(MyResult.pca$rotation[,3]), decreasing = TRUE)[1:
 MyResult.pca$rotation[top_10_metab,1]
 
 ```
+# IPCA
+```{r}
+# Media and pellet
+X <- BsubMP[,3:ncol(BsubMP)]
+MyResult.ipca <- ipca(X, ncomp = 3, mode="deflation")
+plotIndiv(MyResult.ipca, comp = c(1,2), legend = TRUE, title = 'B. subtilis - Media vs Pellet: IPCA',
+          group = BsubMP$Label, legend.title = 'Treatment',
+          ellipse = TRUE, style = "ggplot2", ind.names = FALSE)
+plotVar(MyResult.pca, cutoff = 0.8)
+MyResult.ipca$kurtosis
+hist(MyResult.ipca$loadings$X[,1], main = "Histogram of IPC1's loadings", xlab = "IPC1 Loadings")
+hist(MyResult.ipca$loadings$X[,2], main = "Histogram of IPC2's loadings", xlab = "IPC2 Loadings")
+hist(MyResult.ipca$loadings$X[,3], main = "Histogram of IPC3's loadings", xlab = "IPC3 Loadings")
 
+# Pellet - Flight vs Ground
+X <- BsubFG[,3:ncol(BsubFG)]
+MyResult.ipca <- ipca(X, ncomp = 4, mode="deflation")
+plotIndiv(MyResult.ipca, comp = c(1,2), legend = TRUE, title = 'B. subtilis - Flight vs Ground: IPCA',
+          group = BsubFG$Label, legend.title = 'Treatment',
+          ellipse = TRUE, style = "ggplot2", ind.names = FALSE)
+plotIndiv(MyResult.ipca, comp = c(1,2,3), legend = TRUE, title = 'B. subtilis - Flight vs Ground: IPCA',
+          group = BsubFG$Label, legend.title = 'Treatment',
+          ellipse = TRUE, style = "3d", ind.names = FALSE)
+plotVar(MyResult.ipca, cutoff = 0.8)
+MyResult.ipca$kurtosis # first two components
+hist(MyResult.ipca$loadings$X[,1], main = "Histogram of IPC1's loadings", xlab = "IPC1 Loadings")
+hist(MyResult.ipca$loadings$X[,2], main = "Histogram of IPC2's loadings", xlab = "IPC2 Loadings")
+hist(MyResult.ipca$loadings$X[,3], main = "Histogram of IPC3's loadings", xlab = "IPC3 Loadings")
+hist(MyResult.ipca$loadings$X[,4], main = "Histogram of IPC4's loadings", xlab = "IPC4 Loadings")
+```
 
 
 
