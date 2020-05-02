@@ -249,11 +249,9 @@ plotIndiv(MyResult.ipca, comp = c(1,2), legend = TRUE, title = 'B. subtilis: IPC
           ellipse = TRUE, style = "ggplot2", ind.names = FALSE)
 plotVar(MyResult.ipca, cutoff = 0.8)
 MyResult.ipca$kurtosis 
-hist(MyResult.ipca$loadings$X[,1])
-hist(MyResult.ipca$loadings$X[,2])
-hist(MyResult.ipca$loadings$X[,3])
-MyResult.ipca
-
+hist(MyResult.ipca$loadings$X[,1], main = "Histogram of IPC1's loadings", xlab = "IPC1 Loadings")
+hist(MyResult.ipca$loadings$X[,2], main = "Histogram of IPC2's loadings", xlab = "IPC2 Loadings")
+hist(MyResult.ipca$loadings$X[,3], main = "Histogram of IPC3's loadings", xlab = "IPC3 Loadings")
 
 # Media and pellet
 X <- BsubMP[,3:ncol(BsubMP)]
@@ -276,9 +274,10 @@ plotIndiv(MyResult.ipca, comp = c(1,2,3), legend = TRUE, title = 'B. subtilis - 
           ellipse = TRUE, style = "3d", ind.names = FALSE)
 plotVar(MyResult.ipca, cutoff = 0.8)
 MyResult.ipca$kurtosis # first two components
-hist(MyResult.ipca$loadings$X[,1])
-hist(MyResult.ipca$loadings$X[,2])
-hist(MyResult.ipca$loadings$X[,3])
+hist(MyResult.ipca$loadings$X[,1], main = "Histogram of IPC1's loadings", xlab = "IPC1 Loadings")
+hist(MyResult.ipca$loadings$X[,2], main = "Histogram of IPC2's loadings", xlab = "IPC2 Loadings")
+hist(MyResult.ipca$loadings$X[,3], main = "Histogram of IPC3's loadings", xlab = "IPC3 Loadings")
+hist(MyResult.ipca$loadings$X[,4], main = "Histogram of IPC4's loadings", xlab = "IPC4 Loadings")
 
 # Media - Flight vs Ground
 X <- BsubMd[,3:ncol(BsubMd)]
@@ -295,7 +294,7 @@ MyResult.ipca$kurtosis
 # Media and pellet
 X <- BsubMP[,3:ncol(BsubMP)]
 MyResult.sipca <- sipca(X, ncomp = 3, mode="deflation", keepX = c(50,50,50))
-plotIndiv(MyResult.sipca, comp = c(1,2), legend = TRUE, title = 'B. subtilis - Media vs Pellet: IPCA',
+plotIndiv(MyResult.sipca, comp = c(1,2), legend = TRUE, title = 'B. subtilis - Media vs Pellet: sIPCA',
           group = BsubMP$Label, legend.title = 'Treatment',
           ellipse = TRUE, style = "ggplot2", ind.names = FALSE)
 plotVar(MyResult.sipca, cutoff = 0.8)
@@ -304,10 +303,10 @@ MyResult.sipca$kurtosis
 # Pellet - Flight vs Ground
 X <- BsubFG[,3:ncol(BsubFG)]
 MyResult.sipca <- sipca(X, ncomp = 3, mode="deflation", keepX = c(50,50,50))
-plotIndiv(MyResult.sipca, comp = c(1,2), legend = TRUE, title = 'B. subtilis - Flight vs Ground: IPCA',
+plotIndiv(MyResult.sipca, comp = c(1,2), legend = TRUE, title = 'B. subtilis - Flight vs Ground: sIPCA',
           group = BsubFG$Label, legend.title = 'Treatment',
           ellipse = TRUE, style = "ggplot2", ind.names = FALSE)
-plotIndiv(MyResult.sipca, comp = c(1,2,3), legend = TRUE, title = 'B. subtilis - Flight vs Ground: IPCA',
+plotIndiv(MyResult.sipca, comp = c(1,2,3), legend = TRUE, title = 'B. subtilis - Flight vs Ground: sIPCA',
           group = BsubFG$Label, legend.title = 'Treatment',
           ellipse = TRUE, style = "3d", ind.names = FALSE)
 plotVar(MyResult.sipca, cutoff = 0.8)
