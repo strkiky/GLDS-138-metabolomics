@@ -44,10 +44,28 @@ plotIndiv(MyResult.pca, comp = c(1,2), title = 'B. subtilis Transcriptome: PCA',
 plotIndiv(MyResult.pca, comp = c(1,2,3), title = 'B. subtilis Transcriptome: PCA',
           group = edat$Treatment, legend.title = 'Treatment', legend = TRUE,
           ellipse = TRUE, style = "3d", ind.names = FALSE)
-plotVar(MyResult.pca, cutoff = 0.8)
+plotVar(MyResult.pca, cutoff = 0.941)
 MyResult.pca 
 ```
 
+# IPCA
+```{r}
+# Pellet - Flight vs Ground
+X <- edat[,-1]
+MyResult.ipca <- ipca(X, ncomp = 4, mode="deflation")
+plotIndiv(MyResult.ipca, comp = c(1,2), legend = TRUE, title = 'B. subtilis Transcriptome: IPCA',
+          group = edat$Treatment, legend.title = 'Treatment',
+          ellipse = TRUE, style = "ggplot2", ind.names = FALSE)
+plotIndiv(MyResult.ipca, comp = c(1,2,3), legend = TRUE, title = 'B. subtilis Transcriptome: IPCA',
+          group = edat$Treatment, legend.title = 'Treatment',
+          ellipse = TRUE, style = "3d", ind.names = FALSE)
+plotVar(MyResult.ipca, cutoff = 0.8)
+MyResult.ipca$kurtosis # first two components
+hist(MyResult.ipca$loadings$X[,1], main = "Histogram of IPC1's loadings", xlab = "IPC1 Loadings")
+hist(MyResult.ipca$loadings$X[,2], main = "Histogram of IPC2's loadings", xlab = "IPC2 Loadings")
+hist(MyResult.ipca$loadings$X[,3], main = "Histogram of IPC3's loadings", xlab = "IPC3 Loadings")
+hist(MyResult.ipca$loadings$X[,4], main = "Histogram of IPC4's loadings", xlab = "IPC4 Loadings")
+```
 
 
 
