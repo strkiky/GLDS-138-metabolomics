@@ -124,7 +124,10 @@ plotIndiv(MyResult.ipca, comp = c(1,2), legend = TRUE, title = 'S. aureus - Medi
           group = SaurMP$Label, legend.title = 'Treatment',
           ellipse = TRUE, style = "ggplot2", ind.names = FALSE)
 plotVar(MyResult.ipca, cutoff = 0.8)
-MyResult.ipca$kurtosis 
+MyResult.ipca$kurtosis
+hist(MyResult.ipca$loadings$X[,1], main = "Histogram of IPC1's loadings", xlab = "IPC1 Loadings")
+hist(MyResult.ipca$loadings$X[,2], main = "Histogram of IPC2's loadings", xlab = "IPC2 Loadings")
+hist(MyResult.ipca$loadings$X[,3], main = "Histogram of IPC3's loadings", xlab = "IPC3 Loadings")
 
 # Pellet - Flight vs Ground
 X <- SaurFG[,3:ncol(SaurFG)]
@@ -137,6 +140,9 @@ plotIndiv(MyResult.ipca, comp = c(1,2,3), legend = TRUE, title = 'S. aureus - Fl
           ellipse = TRUE, style = "3d", ind.names = FALSE)
 plotVar(MyResult.ipca, cutoff = 0.8)
 MyResult.ipca$kurtosis 
+hist(MyResult.ipca$loadings$X[,1], main = "Histogram of IPC1's loadings", xlab = "IPC1 Loadings")
+hist(MyResult.ipca$loadings$X[,2], main = "Histogram of IPC2's loadings", xlab = "IPC2 Loadings")
+hist(MyResult.ipca$loadings$X[,3], main = "Histogram of IPC3's loadings", xlab = "IPC3 Loadings")
 
 # Media - Flight vs Ground
 X <- SaurMd[,3:ncol(SaurMd)]
@@ -153,7 +159,7 @@ MyResult.ipca$kurtosis
 # Media and pellet
 X <- SaurMP[,3:ncol(SaurMP)]
 MyResult.sipca <- sipca(X, ncomp = 3, mode="deflation", keepX = c(50,50,50))
-plotIndiv(MyResult.sipca, comp = c(1,2), legend = TRUE, title = 'S. aureus - Media vs Pellet: IPCA',
+plotIndiv(MyResult.sipca, comp = c(1,2), legend = TRUE, title = 'S. aureus - Media vs Pellet: sIPCA',
           group = SaurMP$Label, legend.title = 'Treatment',
           ellipse = TRUE, style = "ggplot2", ind.names = FALSE)
 plotVar(MyResult.sipca, cutoff = 0.8)
@@ -161,13 +167,13 @@ MyResult.sipca$kurtosis
 
 # Pellet - Flight vs Ground
 X <- SaurFG[,3:ncol(SaurFG)]
-MyResult.sipca <- sipca(X, ncomp = 4, mode="deflation", keepX = c(50,50,50,50))
-plotIndiv(MyResult.sipca, comp = c(1,2), legend = TRUE, title = 'S. aureus - Flight vs Ground: IPCA',
+MyResult.sipca <- sipca(X, ncomp = 4, mode="deflation", keepX = c(80,80,80,80))
+plotIndiv(MyResult.sipca, comp = c(1,2), legend = TRUE, title = 'S. aureus - Flight vs Ground: sIPCA',
           group = SaurFG$Label, legend.title = 'Treatment',
           ellipse = TRUE, style = "ggplot2", ind.names = FALSE)
-plotIndiv(MyResult.sipca, comp = c(1,2,3), legend = TRUE, title = 'S. aureus - Flight vs Ground: IPCA',
+plotIndiv(MyResult.sipca, comp = c(1,2,3), legend = TRUE, title = 'S. aureus - Flight vs Ground: sIPCA',
           group = SaurFG$Label, legend.title = 'Treatment',
-          ellipse = TRUE, style = "3d", ind.names = FALSE)
+          ellipse = TRUE, style = "3d", ind.names = FALSE, legend.position = "top")
 plotVar(MyResult.sipca, cutoff = 0.8)
 MyResult.sipca$kurtosis 
 
