@@ -28,6 +28,7 @@ SaurMP$Label <- factor(SaurMP$Label)
 # Just Pellet - the bacteria - comparison of just flight vs ground
 SaurFG <- SaurMP[c(19:36),]
 SaurFG$Label <- factor(SaurFG$Label)
+SaurFG$Label <- gsub("Pellet ", "", SaurFG$Label)
 
 # Just Media consumed by the bacteria - F vs G
 SaurMd <- SaurMP[c(1:18),]
@@ -185,13 +186,13 @@ MyResult.sipca$rotation[top_10_metab,2]
 ```
 # Anova
 ```{r}
-anova_data <- SaurFG[,c("Label", "melibiose", "21709", "urea", "maltitol", "4976", "glycerol")]
+anova_data <- SaurFG[,c("Label", "321071", "proline", "pyrophosphate", "urea", "1661", "223535")]
 library(tidyverse)
 anova_data %>% pivot_longer(-Label, names_to = "Metabolite", values_to = "value") %>%
-  mutate(Metabolite = factor(Metabolite, levels = c("melibiose", "21709", "urea", "maltitol", "4976", "glycerol"))) %>%
+  mutate(Metabolite = factor(Metabolite, levels = c("melibiose", "321071", "proline", "pyrophosphate", "urea", "1661", "223535"))) %>%
   ggplot(aes(x = Label, y = value, color = Metabolite)) +
   geom_boxplot() +
-  facet_wrap(~Metabolite)
+  facet_wrap(~Metabolite) 
 
 aov.models = anova_data[ , -grep("Label", names(anova_data))] %>%
   map(~ aov(.~ anova_data$Label))
@@ -201,12 +202,13 @@ summary(aov.models$`urea`)
 summary(aov.models$`maltitol`)
 summary(aov.models$`4976`)
 summary(aov.models$`glycerol`)
+# sIPC1 metabolites is actually incredibly difficult to find differences.
 ```
 #Partial Least Squares - Discriminant Analysis
 ```{r}
 # set up
-X <- BsubFG[,-c(1:2)]
-Y <- BsubFG$Label
+X <- SaurFG[,-c(1:2)]
+Y <- SaurFG$Label
 summary(Y)
 dim(X)
 length(Y)
@@ -214,8 +216,8 @@ length(Y)
 # PLS-DA
 MyResult.plsda <- plsda(X,Y)
 plotIndiv(MyResult.plsda, legend = TRUE,
-          ellipse = TRUE, star = TRUE, title = 'Spaceflight B. subtilis: PLS-DA')
-plotVar(MyResult.plsda, cutoff = 0.75)
+          ellipse = TRUE, star = TRUE, title = 'Spaceflight S. aureus: PLS-DA')
+plotVar(MyResult.plsda, cutoff = 0.9)
 plotLoadings(MyResult.plsda, comp = 1, title = 'Loadings on comp 1: PLS-DA', 
              contrib = 'max', method = 'mean', ndisplay = 20)
 
@@ -242,15 +244,15 @@ plotIndiv(MyResult.splsda2, style="3d")
 
 ##  Tuning parameters and numerical outputs
 # check the best number of components to use 
-MyResult.splsda2 <- plsda(X, Y, ncomp = 5)
+MyResult.splsda2 <- plsda(X, Y, ncomp = 8)
 MyPerf.plsda <- perf(MyResult.splsda2, validation = "Mfold", folds = 3,
                      progressBar = FALSE, nrepeat = 50)
 plot(MyPerf.plsda, col = color.mixo(5:7), sd = TRUE, legend.position = "horizontal") # looks to be 2 components
 
-list.keepX <- c(5:10,  seq(20, 100, 10))
+list.keepX <- c(1:10,  seq(20, 100, 10))
 list.keepX # output the grid of values tested
 
-tune.splsda.srbct <- tune.splsda(X, Y, ncomp = 3, 
+tune.splsda.srbct <- tune.splsda(X, Y, ncomp = 2, 
                                  validation = 'Mfold',
                                  folds = 3, dist = 'max.dist', progressBar = FALSE,
                                  measure = "BER", test.keepX = list.keepX,
@@ -264,7 +266,7 @@ select.keepX
 select.keepX <- tune.splsda.srbct$choice.keepX[1:2]  # optimal no of variables for 2 components
 select.keepX
 
-plot(tune.splsda.srbct, col = color.jet(3))
+plot(tune.splsda.srbct, col = color.jet(2))
 
 # The final graph - we have to use two component 
 MyResult.splsda.final <- splsda(X, Y, ncomp = 2, keepX = select.keepX)
@@ -278,14 +280,58 @@ cim(MyResult.splsda.final, comp = 1, title = "Component 1")
 plotArrow(MyResult.splsda.final, legend=T)
 
 # take a look at the boxplot anyway
-splsda_metab <- BsubFG[,c("Label", "ribonic acid", "methionine", "110014", "223522", "128027", "224109")]
+splsda_metab <- SaurFG[,c("Label", "glycolic acid", "217691", "3-hydroxypropionic acid", "4721", "methionine")]
 library(tidyverse)
 splsda_metab %>% pivot_longer(-Label, names_to = "Metabolite", values_to = "value") %>%
-  mutate(Metabolite = factor(Metabolite, levels = c("ribonic acid", "methionine", "110014", "223522", "128027", "224109"))) %>%
+  mutate(Metabolite = factor(Metabolite, levels = c("glycolic acid", "217691", "3-hydroxypropionic acid", "4721", "methionine"))) %>%
   ggplot(aes(x = Label, y = value, color = Metabolite)) +
   geom_boxplot() +
   facet_wrap(~Metabolite)
 ```
+# Convex clustering
+```{r}
+library(cvxbiclustr)
+
+# create bicluster path
+X <- Saur.as[,-c(1:2)] # data matrix to be clustered, rows are features, columns are the samples.
+rownames(X) <- Saur.as$Sample
+X <- t(X)
+
+# Create annotation for heatmap
+types <- Saur.as$Label
+ty <- as.numeric(factor(types))
+cols <- rainbow(8)
+YlGnBu5 <- c('#ffffd9','#c7e9b4','#41b6c4','#225ea8','#081d58')
+hmcols <- colorRampPalette(YlGnBu5)(256)
+
+# Construct weights and edge-incidence matrices
+phi <- 0.5; k <- 5
+wts <- gkn_weights(X,phi=phi,k_row=k,k_col=k)
+w_row <- wts$w_row
+w_col <- wts$w_col
+E_row <- wts$E_row
+E_col <- wts$E_col
+
+# Connected Components of Row and Column Graphs
+wts$nRowComp
+wts$nColComp
+
+# initialise path parameters and structures
+nGamma <- 5
+gammaSeq <- 10**seq(0,3,length.out=nGamma)
+
+# Generate solution path
+sol <- cobra_validate(X, E_row, E_col, w_row, w_col, gammaSeq)
+
+ix <- 4
+heatmap(sol$U[[ix]],col=hmcols,labRow=NA,labCol=NA,ColSideCol=cols[ty])
+heatmap(sol$U[[ix]],col=hmcols,labRow=NA,labCol=types,ColSideCol=cols[ty])
+
+# cobra computes a convex biclustering path via Dykstra-like Proximal Algorithm
+cobra(X, E_row, E_col, w_row, w_col, gamma, max_iter = 100, tol = 0.001)
+
+```
+
 
 
 
