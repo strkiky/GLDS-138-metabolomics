@@ -83,18 +83,6 @@ plotIndiv(MyResult.pca, comp = c(1,2), legend = TRUE,
           ellipse = TRUE, style = "ggplot2", ind.names = FALSE)
 plotVar(MyResult.pca, cutoff = 0.8)
 MyResult.pca 
-
-# top metabolites of PC1
-top_10_metab <- names(sort(abs(MyResult.pca$rotation[,1]), decreasing = TRUE)[1:10])
-MyResult.pca$rotation[top_10_metab,1]
-
-# top metabolites for PC2
-top_10_metab <- names(sort(abs(MyResult.pca$rotation[,2]), decreasing = TRUE)[1:10])
-MyResult.pca$rotation[top_10_metab,2]
-
-# top metabolites for PC3
-top_10_metab <- names(sort(abs(MyResult.pca$rotation[,3]), decreasing = TRUE)[1:10])
-MyResult.pca$rotation[top_10_metab,3]
 ```
 # Independent Principal Component Analysis
 ```{r}
@@ -186,6 +174,33 @@ plotIndiv(MyResult.sipca, comp = c(1,2), legend = TRUE,
           ellipse = TRUE, style = "ggplot2", ind.names = FALSE)
 plotVar(MyResult.sipca, cutoff = 0.8)
 MyResult.sipca$kurtosis 
+
+# top metabolites of PC1
+top_10_metab <- names(sort(abs(MyResult.sipca$rotation[,1]), decreasing = TRUE)[1:10])
+MyResult.sipca$rotation[top_10_metab,1]
+
+# top metabolites for PC2
+top_10_metab <- names(sort(abs(MyResult.sipca$rotation[,2]), decreasing = TRUE)[1:10])
+MyResult.sipca$rotation[top_10_metab,2]
+```
+# Anova
+```{r}
+anova_data <- SaurFG[,c("Label", "melibiose", "21709", "urea", "maltitol", "4976", "glycerol")]
+library(tidyverse)
+anova_data %>% pivot_longer(-Label, names_to = "Metabolite", values_to = "value") %>%
+  mutate(Metabolite = factor(Metabolite, levels = c("melibiose", "21709", "urea", "maltitol", "4976", "glycerol"))) %>%
+  ggplot(aes(x = Label, y = value, color = Metabolite)) +
+  geom_boxplot() +
+  facet_wrap(~Metabolite)
+
+aov.models = anova_data[ , -grep("Label", names(anova_data))] %>%
+  map(~ aov(.~ anova_data$Label))
+summary(aov.models$`melibiose`)
+summary(aov.models$`21709`)
+summary(aov.models$`urea`)
+summary(aov.models$`maltitol`)
+summary(aov.models$`4976`)
+summary(aov.models$`glycerol`)
 ```
 #Partial Least Squares - Discriminant Analysis
 ```{r}
