@@ -372,7 +372,7 @@ plot(carp_fit, type = "js")
 
 # BiClustering
 cbass_fit <- CBASS(X) # takes quite long
-plot(cbass_fit, k.col = 6) # can't see the long names
+plot(cbass_fit, k.col = 8, heatcol.label.cex = 0.6, heatrow.label.cex = 0.2) # can't see the long names
 plot(cbass_fit, type = "js", k.row = 6) # standard heatmap, seems to have no problems separating the groups appropriately.
 
 # Look at just Pellet Flight vs Ground
@@ -381,6 +381,18 @@ rownames(X) <- X$Sample
 X <- X[,-c(1:2)]
 X <- t(X)
 
+# BiClustering
+cbass_fit <- CBASS(X) # takes quite long
+plot(cbass_fit, type = "js", k.row = 6)
+
+# boxplot look at the top metabolites
+cbass_metab <- SaurFG[,c("Label", "133605", "3122", "4609", "5263", "236845", "192876")]
+library(tidyverse)
+cbass_metab %>% pivot_longer(-Label, names_to = "Metabolite", values_to = "value") %>%
+  mutate(Metabolite = factor(Metabolite, levels = c("Label", "133605", "3122", "4609", "5263", "236845", "192876"))) %>%
+  ggplot(aes(x = Label, y = value, color = Metabolite)) +
+  geom_boxplot() +
+  facet_wrap(~Metabolite)
 
 ```
 
