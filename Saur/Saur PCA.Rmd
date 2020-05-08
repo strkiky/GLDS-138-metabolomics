@@ -394,6 +394,52 @@ cbass_metab %>% pivot_longer(-Label, names_to = "Metabolite", values_to = "value
   geom_boxplot() +
   facet_wrap(~Metabolite)
 
+
+
+##  move back to this package for just Flight vs Space - actually made it more difficult to see
+library(cvxbiclustr)
+
+X <- SaurFG
+rownames(X) <- X$Sample
+X <- X[,-c(1:2)]
+X <- t(X)
+
+# Create annotation for heatmap
+types <- SaurFG$Label
+ty <- as.numeric(factor(types))
+cols <- rainbow(8)
+YlGnBu5 <- c('#ffffd9','#c7e9b4','#41b6c4','#225ea8','#081d58')
+hmcols <- colorRampPalette(YlGnBu5)(256)
+
+# Construct weights and edge-incidence matrices
+phi <- 0.5; k <- 5
+wts <- gkn_weights(X,phi=phi,k_row=k,k_col=k)
+w_row <- wts$w_row
+w_col <- wts$w_col
+E_row <- wts$E_row
+E_col <- wts$E_col
+
+# Connected Components of Row and Column Graphs
+wts$nRowComp
+wts$nColComp
+
+## cobra validation
+# Initialize path parameters and structures
+nGamma <- 7
+gammaSeq <- 10**seq(0,1,length.out=nGamma)
+# Generate solution path
+sol <- cobra_validate(X,E_row,E_col,w_row,w_col,gammaSeq,fraction=0.01)
+# Plot validation error
+verr <- sol$validation_error
+plot(verr)
+# Heatmap of data smoothed at the model selected to minimize validation error
+
+heatmap(sol$U[[1]],col=hmcols,labRow=NA,labCol=types,ColSideCol=cols[ty])
+heatmap(sol$U[[2]],col=hmcols,labRow=NA,labCol=NA,ColSideCol=cols[ty])
+heatmap(sol$U[[3]],col=hmcols,labRow=NA,labCol=NA,ColSideCol=cols[ty])
+heatmap(sol$U[[4]],col=hmcols,labRow=NA,labCol=NA,ColSideCol=cols[ty])
+heatmap(sol$U[[5]],col=hmcols,labRow=NA,labCol=NA,ColSideCol=cols[ty])
+
 ```
 
 
