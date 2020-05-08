@@ -441,16 +441,110 @@ heatmap(sol$U[[4]],col=hmcols,labRow=NA,labCol=NA,ColSideCol=cols[ty])
 heatmap(sol$U[[5]],col=hmcols,labRow=NA,labCol=NA,ColSideCol=cols[ty])
 
 ```
+# Setting up Multi-Omics
+```{r}
+setwd("C:/Users/strki/Documents/Git_R/GLDS-138 metabolomics/GLDS-138-metabolomics/Saur")
 
+# Polar metabolites
+GLDS138.as <- read.csv("GLDS138.as.csv", check.names = FALSE, header = TRUE)
+# Just S. aureus
+Saur.as <- GLDS138.as[c(53:104),]
+Saur.as <- Saur.as[,-3]
+Saur.as$Label <- gsub("Positive ", "", Saur.as$Label)
+Saur.as$Sample <- gsub("SA-", "", Saur.as$Sample)
+Saur.as$Sample <- gsub("Med_", "M", Saur.as$Sample)
+Saur.as$Sample <- gsub("Pellet_", "P", Saur.as$Sample)
+# Get rid of Control ASAP and Frozen - so just media and pellet
+SaurMP <- Saur.as[-c(19:26, 45:52),]
+SaurMP$Label <- factor(SaurMP$Label)
+# Just Pellet - the bacteria - comparison of just flight vs ground
+SaurFG <- SaurMP[c(19:36),]
+SaurFG$Label <- gsub("Pellet ", "", SaurFG$Label)
+SaurFG$Label <- factor(SaurFG$Label)
 
+# set up lipidomics data
+Ldata <- read.csv("GLDS138.Lipid.as.csv", row.names = 1, check.names = FALSE)
+Ldata <- Ldata[c(37:54),]
+Ldata <- Ldata[,-c(1:2)]
+L_label <- data.frame(c(rep("Spaceflight", 9), rep("Ground Control", 9)))
+Ldata[,"Label"] <- L_label
+Ldata <- Ldata[,c("Label", setdiff(names(Ldata), "Label"))]
+```
+# Projection to Latent Structure (PLS)
+```{r}
+library(mixOmics)
+#quick start on PLS
+X <- SaurFG[-c(1:2)]
+Y <- Ldata[,-1]
+rownames(X) <- SaurFG$Sample
+dim(X); dim(Y)
 
+# straight to tuning
 
+MyResult.pls <- pls(X,Y, ncomp = 4)
+perf.pls <- perf(MyResult.pls, validation = "Mfold", folds = 5,
+                  progressBar = FALSE, nrepeat = 50)
+plot(perf.pls$Q2.total)
+abline(h = 0.0975) # can't even see the line, but you want it to be less than 0.0975
 
+list.keepX <- c(2:10, 15, 20)
+# tuning based on MAE                                       # definitely need virtual machine
+tune.spls.MAE <- tune.spls(X, Y, ncomp = 4,
+                           test.keepX = list.keepX,
+                           validation = "Mfold", folds = 5,
+                           nrepeat = 50, progressBar = FALSE,
+                           measure = 'MAE')
+plot(tune.spls.MAE, legend.position = 'topright')
 
+MyResult.spls <- spls(X, Y, keepX = c(15, 15), keepY = c(10,10))
+plotIndiv(MyResult.spls, group = SaurFG$Label)
+plotVar(MyResult.spls, cex = c(3,3), legend = TRUE)
 
+plotIndiv(MyResult.spls, group = SaurFG$Label,
+          rep.space = "XY-variate", legend = TRUE,
+          legend.title = 'Treatment',
+          title = 'Spaceflight Bacillus subtilis: sPLS')
 
+# Clustered image maps
+X11()
+cim(MyResult.spls, comp = 1)
 
+#Relevance networks
+X11()
+network(MyResult.spls, comp = 1, interactive = TRUE, 
+        color.edge = color.GreenRed(100))
+# network(MyResult.spls, comp = 1, cutoff = 0.89, save = 'jpeg',name.save = 'PLS.network') # if intending to save it
 
+# Arrow plots
+plotArrow(MyResult.spls,group=SaurFG$Label, legend = TRUE,
+          X.label = 'PLS comp 1', Y.label = 'PLS comp 2')
+# Short arrows indicate a good agreement found by the PLS between both data sets
+# more useful if we're looking at time related, or soemthing linking from one treatment to another.
+
+# Variable selection outputs
+MySelectedVariables <- selectVar(MyResult.spls, comp = 1)
+MySelectedVariables$X$name # Selected polar metabolites on component 1
+
+MySelectedVariables$Y$name # Selected non-polar metabolites on component 1
+
+plotLoadings(MyResult.spls, comp = 1, size.name = rel(0.5))
+
+# check both on the boxplot
+pls_metab <- SaurFG[,c("Label", "n-acetyl-d-hexosamine", "146563", "glycolic acid", "glycerol-alpha-phosphate", "21683", "3-phenyllactic acid")]
+library(tidyverse)
+pls_metab %>% pivot_longer(-Label, names_to = "Metabolite", values_to = "value") %>%
+  mutate(Metabolite = factor(Metabolite, levels = c("n-acetyl-d-hexosamine", "146563", "glycolic acid", "glycerol-alpha-phosphate", "21683", "3-phenyllactic acid"))) %>%
+  ggplot(aes(x = Label, y = value, color = Metabolite)) +
+  geom_boxplot() +
+  facet_wrap(~Metabolite)
+
+pls_lmetab <- Ldata[,c("Label", "V442", "V453", "V583", "V228", "V800", "V894")]
+pls_lmetab %>% pivot_longer(-Label, names_to = "Metabolite", values_to = "value") %>%
+  mutate(Metabolite = factor(Metabolite, levels = c("V442", "V453", "V583", "V228", "V800", "V894"))) %>%
+  ggplot(aes(x = Label, y = value, color = Metabolite)) +
+  geom_boxplot() +
+  facet_wrap(~Metabolite)
+```
 
 
 
