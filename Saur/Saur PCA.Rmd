@@ -330,7 +330,7 @@ groups_col <- sol$groups_col[[ix]]
 M <- biclust_smooth(X,groups_row,groups_col)
 heatmap(M,col=hmcols,labRow=rownames(X),labCol=types,ColSideCol=cols[ty])
 
-heatmap(sol$U[[1]],col=hmcols,labRow=NA,labCol=NA,ColSideCol=cols[ty])
+heatmap(sol$U[[1]],col=hmcols,labRow=NA,labCol=types,ColSideCol=cols[ty])
 heatmap(sol$U[[2]],col=hmcols,labRow=NA,labCol=NA,ColSideCol=cols[ty])
 heatmap(sol$U[[3]],col=hmcols,labRow=NA,labCol=NA,ColSideCol=cols[ty])
 heatmap(sol$U[[4]],col=hmcols,labRow=NA,labCol=NA,ColSideCol=cols[ty])
@@ -372,7 +372,7 @@ plot(carp_fit, type = "js")
 
 # BiClustering
 cbass_fit <- CBASS(X) # takes quite long
-plot(cbass_fit, k.col = 8, heatcol.label.cex = 0.6, heatrow.label.cex = 0.2) # can't see the long names
+plot(cbass_fit, heatcol.label.cex = 0.6, heatrow.label.cex = 0.2, k.col = 6) # can't see the long names
 plot(cbass_fit, type = "js", k.row = 6) # standard heatmap, seems to have no problems separating the groups appropriately.
 
 # Look at just Pellet Flight vs Ground
@@ -386,10 +386,10 @@ cbass_fit <- CBASS(X) # takes quite long
 plot(cbass_fit, type = "js", k.row = 6)
 
 # boxplot look at the top metabolites
-cbass_metab <- SaurFG[,c("Label", "133605", "3122", "4609", "5263", "236845", "192876")]
+cbass_metab <- SaurFG[,c("Label", "133605", "3122", "4609", "5263", "2-deoxyerythritol", "hydroxycarbamate NIST")]
 library(tidyverse)
 cbass_metab %>% pivot_longer(-Label, names_to = "Metabolite", values_to = "value") %>%
-  mutate(Metabolite = factor(Metabolite, levels = c("Label", "133605", "3122", "4609", "5263", "236845", "192876"))) %>%
+  mutate(Metabolite = factor(Metabolite, levels = c("133605", "3122", "4609", "5263", "2-deoxyerythritol", "hydroxycarbamate NIST"))) %>%
   ggplot(aes(x = Label, y = value, color = Metabolite)) +
   geom_boxplot() +
   facet_wrap(~Metabolite)
