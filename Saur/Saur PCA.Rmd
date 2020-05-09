@@ -277,11 +277,15 @@ X11()
 cim(MyResult.splsda.final, comp = 1, title = "Component 1")
 plotArrow(MyResult.splsda.final, legend=T)
 
+# top metabolites of component
+top_10_metab <- names(sort(abs(MyResult.splsda.final$mat.c[,1]), decreasing = TRUE)[1:10])
+MyResult.splsda.final$mat.c[top_10_metab,1]
+
 # take a look at the boxplot anyway
-splsda_metab <- SaurFG[,c("Label", "glycolic acid", "217691", "3-hydroxypropionic acid", "4721", "methionine")]
+splsda_metab <- SaurFG[,c("Label", "glycolic acid", "217691", "3-hydroxypropionic acid", "4721", "methionine","glycerol-alpha-phosphate" )]
 library(tidyverse)
 splsda_metab %>% pivot_longer(-Label, names_to = "Metabolite", values_to = "value") %>%
-  mutate(Metabolite = factor(Metabolite, levels = c("glycolic acid", "217691", "3-hydroxypropionic acid", "4721", "methionine"))) %>%
+  mutate(Metabolite = factor(Metabolite, levels = c("glycolic acid", "217691", "3-hydroxypropionic acid", "4721", "methionine","glycerol-alpha-phosphate"))) %>%
   ggplot(aes(x = Label, y = value, color = Metabolite)) +
   geom_boxplot() +
   facet_wrap(~Metabolite)
@@ -481,7 +485,7 @@ dim(X); dim(Y)
 
 # straight to tuning
 
-MyResult.pls <- pls(X,Y, ncomp = 4)
+MyResult.pls <- pls(X,Y, ncomp = 10)
 perf.pls <- perf(MyResult.pls, validation = "Mfold", folds = 5,
                   progressBar = FALSE, nrepeat = 50)
 plot(perf.pls$Q2.total)
@@ -546,6 +550,45 @@ pls_lmetab %>% pivot_longer(-Label, names_to = "Metabolite", values_to = "value"
   facet_wrap(~Metabolite)
 ```
 
+# Multi-block Discriminant Analysis with DIABLO
+```{r}
+# Set up
+library(mixOmics)
+mdat <- SaurFG[-c(1:2)]
+Ldat <- Ldata[,-1]
+rownames(mdat) <- rownames(Ldat)
+
+X <- list(metabolite = mdat,
+          lipid = Ldat)
+Y <- SaurFG$Label
+summary(Y)
+
+list.keepX <- list(metabolite = c(10,5), lipid = c(10,5))
+
+# quick start
+MyResult.diablo <- block.splsda(X, Y, keepX=list.keepX)
+plotIndiv(MyResult.diablo,
+          ind.names = TRUE,
+          legend = TRUE, cex = c(1,2),
+          title = "Spaceflight S. aureus with DIABLO") ## sample plot
+plotVar(MyResult.diablo, var.names = c(TRUE, FALSE),
+        legend = TRUE, pch = c(16, 2))
+plotDiablo(MyResult.diablo, ncomp = 1)
+
+circosPlot(MyResult.diablo, cutoff = 0.93, ncol.legend = 1, showIntraLinks = TRUE, line = TRUE, size.variables = 0.6)
+
+X11()
+cimDiablo(MyResult.diablo, comp = 1,
+          color.blocks = c('darkorchid', 'brown1'),  margin=c(9,20), 
+          legend.position = "right", size.legend = 0.9)
+plotLoadings(MyResult.diablo, comp = 1, contrib = "max", size.name = 1.25)
+par(mfrow=c(1,1))
+
+# Relevance network
+network(MyResult.diablo, blocks = c(1,2),
+        color.node = c('darkorchid', 'brown1'), 
+        interactive = TRUE)
+```
 
 
 
