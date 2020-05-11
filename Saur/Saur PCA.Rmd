@@ -483,7 +483,7 @@ Y <- Ldata[,-1]
 rownames(X) <- SaurFG$Sample
 dim(X); dim(Y)
 
-# straight to tuning
+# straight to tuning                    ### this analysis seems to be pointless
 
 MyResult.pls <- pls(X,Y, ncomp = 10)
 perf.pls <- perf(MyResult.pls, validation = "Mfold", folds = 5,
@@ -499,8 +499,11 @@ tune.spls.MAE <- tune.spls(X, Y, ncomp = 4,
                            nrepeat = 50, progressBar = FALSE,
                            measure = 'MAE')
 plot(tune.spls.MAE, legend.position = 'topright')
+ncomp <- tune.spls.MAE$choice.ncomp$ncomp
+ncomp
+tune.spls.MAE$choice.keepX # 2, 20, 2, 2
 
-MyResult.spls <- spls(X, Y, keepX = c(15, 15), keepY = c(10,10))
+MyResult.spls <- spls(X, Y, keepX = c(2, 20), keepY = c(2,20))
 plotIndiv(MyResult.spls, group = SaurFG$Label)
 plotVar(MyResult.spls, cex = c(3,3), legend = TRUE)
 
@@ -514,7 +517,6 @@ X11()
 cim(MyResult.spls, comp = 1)
 
 #Relevance networks
-X11()
 network(MyResult.spls, comp = 1, interactive = TRUE, 
         color.edge = color.GreenRed(100))
 # network(MyResult.spls, comp = 1, cutoff = 0.89, save = 'jpeg',name.save = 'PLS.network') # if intending to save it
