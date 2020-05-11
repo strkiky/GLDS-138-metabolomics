@@ -501,7 +501,7 @@ tune.spls.MAE <- tune.spls(X, Y, ncomp = 4,
 plot(tune.spls.MAE, legend.position = 'topright')
 ncomp <- tune.spls.MAE$choice.ncomp$ncomp
 ncomp
-tune.spls.MAE$choice.keepX # 2, 20, 2, 2
+tune.spls.MAE$choice.keepX # 2, 20, 2, 3, 10, 4, 9, 10, 10, 10
 
 MyResult.spls <- spls(X, Y, keepX = c(2, 20), keepY = c(2,20))
 plotIndiv(MyResult.spls, group = SaurFG$Label)
@@ -512,11 +512,11 @@ plotIndiv(MyResult.spls, group = SaurFG$Label,
           legend.title = 'Treatment',
           title = 'Spaceflight Bacillus subtilis: sPLS')
 
-# Clustered image maps
+# Clustered image maps - pointless with 4 metabolites
 X11()
 cim(MyResult.spls, comp = 1)
 
-#Relevance networks
+#Relevance networks     - pointless with 4 metabolites
 network(MyResult.spls, comp = 1, interactive = TRUE, 
         color.edge = color.GreenRed(100))
 # network(MyResult.spls, comp = 1, cutoff = 0.89, save = 'jpeg',name.save = 'PLS.network') # if intending to save it
@@ -536,17 +536,11 @@ MySelectedVariables$Y$name # Selected non-polar metabolites on component 1
 plotLoadings(MyResult.spls, comp = 1, size.name = rel(0.5))
 
 # check both on the boxplot
-pls_metab <- SaurFG[,c("Label", "n-acetyl-d-hexosamine", "146563", "glycolic acid", "glycerol-alpha-phosphate", "21683", "3-phenyllactic acid")]
+pls_metab <- SaurFG[,c("Label", "228288", "321071")]
+pls_metab[,c("V442", "V453")] <- Ldata[,c("V442", "V453")]
 library(tidyverse)
 pls_metab %>% pivot_longer(-Label, names_to = "Metabolite", values_to = "value") %>%
-  mutate(Metabolite = factor(Metabolite, levels = c("n-acetyl-d-hexosamine", "146563", "glycolic acid", "glycerol-alpha-phosphate", "21683", "3-phenyllactic acid"))) %>%
-  ggplot(aes(x = Label, y = value, color = Metabolite)) +
-  geom_boxplot() +
-  facet_wrap(~Metabolite)
-
-pls_lmetab <- Ldata[,c("Label", "V442", "V453", "V583", "V228", "V800", "V894")]
-pls_lmetab %>% pivot_longer(-Label, names_to = "Metabolite", values_to = "value") %>%
-  mutate(Metabolite = factor(Metabolite, levels = c("V442", "V453", "V583", "V228", "V800", "V894"))) %>%
+  mutate(Metabolite = factor(Metabolite, levels = c("228288", "321071", "V442", "V453"))) %>%
   ggplot(aes(x = Label, y = value, color = Metabolite)) +
   geom_boxplot() +
   facet_wrap(~Metabolite)
