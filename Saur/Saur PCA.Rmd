@@ -510,7 +510,7 @@ plotVar(MyResult.spls, cex = c(3,3), legend = TRUE)
 plotIndiv(MyResult.spls, group = SaurFG$Label,
           rep.space = "XY-variate", legend = TRUE,
           legend.title = 'Treatment',
-          title = 'Spaceflight Bacillus subtilis: sPLS')
+          title = 'Spaceflight S. aureus: sPLS')
 
 # Clustered image maps - pointless with 4 metabolites
 X11()
