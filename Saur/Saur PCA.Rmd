@@ -483,7 +483,7 @@ Y <- Ldata[,-1]
 rownames(X) <- SaurFG$Sample
 dim(X); dim(Y)
 
-# straight to tuning                    ### this analysis seems to be pointless
+# straight to tuning                    ### virtual machine required for analysis
 
 MyResult.pls <- pls(X,Y, ncomp = 10)
 perf.pls <- perf(MyResult.pls, validation = "Mfold", folds = 5,
@@ -559,31 +559,61 @@ X <- list(metabolite = mdat,
 Y <- SaurFG$Label
 summary(Y)
 
-list.keepX <- list(metabolite = c(10,5), lipid = c(10,5))
+# tune number of components
+sgccda.res = block.splsda(X = X, Y = Y, ncomp = 8)
 
-# quick start
-MyResult.diablo <- block.splsda(X, Y, keepX=list.keepX)
-plotIndiv(MyResult.diablo,
-          ind.names = TRUE,
-          legend = TRUE, cex = c(1,2),
-          title = "Spaceflight S. aureus with DIABLO") ## sample plot
-plotVar(MyResult.diablo, var.names = c(TRUE, FALSE),
-        legend = TRUE, pch = c(16, 2))
-plotDiablo(MyResult.diablo, ncomp = 1)
+perf.diablo = perf(sgccda.res, validation = 'Mfold', folds = 5, nrepeat = 50)
+plot(perf.diablo) 
+perf.diablo$choice.ncomp$WeightedVote
+ncomp = perf.diablo$choice.ncomp$WeightedVote["Overall.BER", "centroids.dist"]
+ncomp
 
-circosPlot(MyResult.diablo, cutoff = 0.93, ncol.legend = 1, showIntraLinks = TRUE, line = TRUE, size.variables = 0.6)
+test.keepX = list(metabolite = c(5:9, seq(10, 18, 2), seq(20,30,5)),
+                  lipid = c(5:9, seq(10, 18, 2), seq(20,30,5)))
 
-X11()
-cimDiablo(MyResult.diablo, comp = 1,
-          color.blocks = c('darkorchid', 'brown1'),  margin=c(9,20), 
-          legend.position = "right", size.legend = 0.9)
-plotLoadings(MyResult.diablo, comp = 1, contrib = "max", size.name = 1.25)
-par(mfrow=c(1,1))
+design = matrix(0.1, ncol = length(X), nrow = length(X), 
+                dimnames = list(names(X), names(X)))
+diag(design) = 0
+design 
 
-# Relevance network
+tune.TCGA = tune.block.splsda(X = X, Y = Y, ncomp = ncomp, 
+                              test.keepX = test.keepX, design = design,
+                              validation = 'Mfold', folds = 10, nrepeat = 1,
+                              cpus = 2, dist = "centroids.dist")
+list.keepX = tune.TCGA$choice.keepX
+list.keepX # = list(metabolite = c(5,5), lipid = c(18,5)) 
+sgccda.res = block.splsda(X = X, Y = Y, ncomp = ncomp, 
+                          keepX = list.keepX, design = design)
+sgccda.res$design
+selectVar(sgccda.res, block = 'metabolite', comp = 1)$metabolite$name
+selectVar(sgccda.res, block = 'lipid', comp = 1)$lipid$name
+
+plotDiablo(sgccda.res, ncomp = 1)
+plotIndiv(sgccda.res, ind.names = FALSE, legend = TRUE, title = 'DIABLO')
+plotArrow(sgccda.res, ind.names = FALSE, legend = TRUE, title = 'DIABLO')
+
+plotVar(sgccda.res, var.names = FALSE, style = 'graphics', legend = TRUE, 
+        pch = c(16, 17), cex = c(2,2), col = c('darkorchid', 'brown1'))
+
+circosPlot(sgccda.res, cutoff = 0.92, line = TRUE, 
+           color.blocks= c('darkorchid', 'brown1'),
+           color.cor = c("chocolate3","grey20"), size.labels = 1.5)
+
+network(sgccda.res, blocks = c(1,2),
+        color.node = c('darkorchid', 'lightgreen'), cutoff = 0.7)
 network(MyResult.diablo, blocks = c(1,2),
         color.node = c('darkorchid', 'brown1'), 
         interactive = TRUE)
+
+plotLoadings(sgccda.res, comp = 1, contrib = 'max', method = 'median')
+
+# X11()
+cimDiablo(sgccda.res, margin=c(9,18), size.legend = 0.9, legend.position = "right",)
+
+perf.diablo = perf(sgccda.res, validation = 'Mfold', M = 3, nrepeat = 50, 
+                   dist = 'centroids.dist')
+perf.diablo$MajorityVote.error.rate
+auc.splsda = auroc(sgccda.res, roc.block = "miRNA", roc.comp = 2)
 ```
 
 
