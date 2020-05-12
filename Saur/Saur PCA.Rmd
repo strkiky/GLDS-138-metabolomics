@@ -544,6 +544,11 @@ pls_metab %>% pivot_longer(-Label, names_to = "Metabolite", values_to = "value")
   ggplot(aes(x = Label, y = value, color = Metabolite)) +
   geom_boxplot() +
   facet_wrap(~Metabolite)
+pls_metab %>% pivot_longer(-Label, names_to = "Metabolite", values_to = "value") %>%
+  mutate(Metabolite = factor(Metabolite, levels = c("228288", "321071", "V442", "V453"))) %>%
+  ggplot(aes(x = Label, y = value, color = Metabolite)) +
+  geom_violin() +
+  facet_wrap(~Metabolite)
 ```
 
 # Multi-block Discriminant Analysis with DIABLO
