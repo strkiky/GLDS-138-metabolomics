@@ -171,7 +171,6 @@ plotIndiv(MyResult.splsda.final, comp = 1:2, group = BsubFG$Label,
           ind.names = FALSE, title = "Maximum distance",
           legend = TRUE,  background = background)
 
-
 # take a look at the boxplot anyway
 splsda_metab <- BsubFG[,c("Label", "ribonic acid")]
 library(tidyverse)
