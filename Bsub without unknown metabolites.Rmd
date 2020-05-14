@@ -109,9 +109,14 @@ MyResult.pca$rotation[top_10_metab,2]
 top_10_metab <- names(sort(abs(MyResult.pca$rotation[,3]), decreasing = TRUE)[1:10])
 MyResult.pca$rotation[top_10_metab,3]
 
-
-
-
+# anova
+anova_data <- BsubFG[,c("Label", "glycerol-3-galactoside", "dihydroxyacetone", "orotic acid", "uracil", "serine", "n-acetyl-d-hexosamine")]
+library(tidyverse)
+anova_data %>% pivot_longer(-Label, names_to = "Metabolite", values_to = "value") %>%
+  mutate(Metabolite = factor(Metabolite, levels = c("glycerol-3-galactoside", "dihydroxyacetone", "orotic acid", "uracil", "serine", "n-acetyl-d-hexosamine"))) %>%
+  ggplot(aes(x = Label, y = value, color = Metabolite)) +
+  geom_boxplot() +
+  facet_wrap(~Metabolite)
 ```
 
 
