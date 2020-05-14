@@ -181,7 +181,114 @@ splsda_metab %>% pivot_longer(-Label, names_to = "Metabolite", values_to = "valu
   facet_wrap(~Metabolite)
 ```
 
+# Convex biclustering
+```{r}
+# set up
+library(clustRviz)
+GLDS138.as <- read.csv("GLDS138.as.csv", check.names = FALSE, header = TRUE)
+## remove unknown metabolites
+GLDS138 <- GLDS138.as[,1:151]
 
+# Just B. subtilis
+Bsub.as <- GLDS138[c(1:52),]
+Bsub.as <- Bsub.as[,-3]
+Bsub.as$Label <- gsub("Positive ", "", Bsub.as$Label)
+Bsub.as$Sample <- gsub("BS-", "", Bsub.as$Sample)
+Bsub.as$Sample <- gsub("Med_", "M", Bsub.as$Sample)
+Bsub.as$Sample <- gsub("Pellet_", "P", Bsub.as$Sample)
+# Get rid of Control ASAP and Frozen - so just media and pellet
+BsubMP <- Bsub.as[-c(1:8, 27:34),]
+BsubMP$Label <- factor(BsubMP$Label)
+# Just Pellet - the bacteria - comparison of just flight vs ground
+BsubFG <- BsubMP[c(19:36),]
+BsubFG$Label <- gsub("Pellet ", "", BsubFG$Label)
+# Just Media consumed by the bacteria - F vs G
+BsubMd <- BsubMP[c(1:18),]
+BsubMd$Label <- gsub("Media ", "", BsubMd$Label)
+
+# Look at the entire thing
+X <- Bsub.as
+rownames(X) <- X$Sample
+X <- X[,-c(1:2)]
+X <- t(X)
+
+# clustering
+carp_fit <- CARP(X, X.center = FALSE)
+print(carp_fit)
+
+plot(carp_fit, type = "dendrogram")
+plot(carp_fit, type = "dynamic_path") # require virtual machine
+plot(carp_fit, type = "js")
+
+# BiClustering
+cbass_fit <- CBASS(X) # takes quite long
+plot(cbass_fit, heatcol.label.cex = 0.6, heatrow.label.cex = 0.2, k.col = 6) # can't see the long names
+plot(cbass_fit, type = "js", k.row = 6) # standard heatmap, seems to have no problems separating the groups appropriately.
+
+# Look at just Pellet Flight vs Ground
+X <- BsubFG
+rownames(X) <- X$Sample
+X <- X[,-c(1:2)]
+X <- t(X)
+
+# BiClustering
+cbass_fit <- CBASS(X) # takes quite long
+plot(cbass_fit, type = "js", k.row = 6)
+
+# boxplot look at the top metabolites
+cbass_metab <- BsubFG[,c("Label", "4-hydroxybutyric acid", "nicotinic acid", "1,3,5-trimethylcyanuric acid", "beta-alanine")]
+library(tidyverse)
+cbass_metab %>% pivot_longer(-Label, names_to = "Metabolite", values_to = "value") %>%
+  mutate(Metabolite = factor(Metabolite, levels = c("4-hydroxybutyric acid", "nicotinic acid", "1,3,5-trimethylcyanuric acid", "beta-alanine"))) %>%
+  ggplot(aes(x = Label, y = value, color = Metabolite)) +
+  geom_boxplot() +
+  facet_wrap(~Metabolite)
+
+##  move back to this package for just Flight vs Space - actually made it more difficult to see
+library(cvxbiclustr)
+
+X <- BsubFG
+rownames(X) <- X$Sample
+X <- X[,-c(1:2)]
+X <- t(X)
+
+# Create annotation for heatmap
+types <- SaurFG$Label
+ty <- as.numeric(factor(types))
+cols <- rainbow(8)
+YlGnBu5 <- c('#ffffd9','#c7e9b4','#41b6c4','#225ea8','#081d58')
+hmcols <- colorRampPalette(YlGnBu5)(256)
+
+# Construct weights and edge-incidence matrices
+phi <- 0.5; k <- 5
+wts <- gkn_weights(X,phi=phi,k_row=k,k_col=k)
+w_row <- wts$w_row
+w_col <- wts$w_col
+E_row <- wts$E_row
+E_col <- wts$E_col
+
+# Connected Components of Row and Column Graphs
+wts$nRowComp
+wts$nColComp
+
+## cobra validation
+# Initialize path parameters and structures
+nGamma <- 7
+gammaSeq <- 10**seq(0,1,length.out=nGamma)
+# Generate solution path
+sol <- cobra_validate(X,E_row,E_col,w_row,w_col,gammaSeq,fraction=0.01)
+# Plot validation error
+verr <- sol$validation_error
+plot(verr)
+# Heatmap of data smoothed at the model selected to minimize validation error
+
+heatmap(sol$U[[1]],col=hmcols,labRow=NA,labCol=types,ColSideCol=cols[ty])
+heatmap(sol$U[[2]],col=hmcols,labRow=NA,labCol=NA,ColSideCol=cols[ty])
+heatmap(sol$U[[3]],col=hmcols,labRow=NA,labCol=NA,ColSideCol=cols[ty])
+heatmap(sol$U[[4]],col=hmcols,labRow=NA,labCol=NA,ColSideCol=cols[ty])
+heatmap(sol$U[[5]],col=hmcols,labRow=NA,labCol=NA,ColSideCol=cols[ty])
+
+```
 
 
 
