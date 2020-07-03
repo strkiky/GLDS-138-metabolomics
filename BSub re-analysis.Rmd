@@ -46,7 +46,90 @@ Bdata[,3:ncol(Bdata)] <- lapply(Bdata[,3:ncol(Bdata)], function(x) as.numeric(as
 
 ```
 
+# data transformation
+```{r}
+# Row-wise correction
+BdataRWC <- as.data.frame(Bdata)
+rowi <- BdataRWC[,3:ncol(BdataRWC)]
 
+BdataRWC[,3:ncol(BdataRWC)] <- rowi / rowSums(rowi) # by the peak of all sums
+
+sum(BdataRWC[105,3:ncol(BdataRWC)]) # checking the row wise correction worked well
+
+# Baseline correction
+tail(BdataRWC[,1:5], 1)
+
+blc <- tail(BdataRWC,1)
+tail(blc[,1:5],1)
+BdataBLC <- BdataRWC[-nrow(BdataRWC),]
+
+BdataBLC[,3:ncol(BdataBLC)] <- BdataBLC[,3:ncol(BdataBLC)] - blc[rep(1,104),3:ncol(blc)]
+BdataRWC1[1,3] - blc[,3] # check that the values are correct
+
+# setup for normalisation
+autoscale <- function(a){
+  colmean <- apply(a,2,mean) # column mean
+  colsd <- apply(a, 2, sd) # col standard deviation
+  cv <- sweep(a, 2, colmean, "-") # minus mean center
+  cv <- sweep(cv, 2, colsd, "/") # divide by sd
+  return(cv)
+}
+
+rangescale <- function(r) {
+  apply(r, 2, function(x) (x  - mean(x))/(max(x) - min(x)))
+}
+
+paretoscale <- function(p){
+  colmean <- apply(p,2,mean) 
+  colsd <- apply(p, 2, sd) 
+  colsqrtsd <- sqrt(colsd)
+  cv <- sweep(p, 2, colmean, "-") 
+  cv <- sweep(cv, 2, colsqrtsd, "/") 
+  return(cv)
+}
+
+levelscale <- function(l){
+  colmean <- apply(l,2,mean)
+  cv <- sweep(l, 2, colmean, "-")
+  cv <- sweep(cv, 2, colmean, "/")
+  return(cv)
+}
+
+centrescale <- function(c){
+  colmean <- apply(c,2,mean)
+  cv <- sweep(c, 2, colmean, "-")
+  return(cv)
+}
+
+Bsub.pn <- BdataBLC[1:52,] # B.subtilis pre-normalisation
+Bsub.pn <- Bsub.pn[,-2]
+Bsub.pn$comment <- gsub("B. subtilis ", "", Bsub.pn$comment)
+
+Bsub.log <- Bsub.pn; Bsub.log[,2:ncol(Bsub.log)] <- log(Bsub.pn[,2:ncol(Bsub.pn)]+1)
+Bsub.as <- Bsub.pn; Bsub.as[,2:ncol(Bsub.as)] <- autoscale(Bsub.pn[,2:ncol(Bsub.pn)])
+Bsub.r <- Bsub.pn; Bsub.r[,2:ncol(Bsub.r)] <- rangescale(Bsub.pn[,2:ncol(Bsub.pn)])
+Bsub.par <- Bsub.pn; Bsub.par[,2:ncol(Bsub.par)] <- paretoscale(Bsub.pn[,2:ncol(Bsub.pn)])
+Bsub.lvl <- Bsub.pn; Bsub.lvl[,2:ncol(Bsub.lvl)] <- levelscale(Bsub.pn[,2:ncol(Bsub.pn)])
+Bsub.c <- Bsub.pn; Bsub.c[,2:ncol(Bsub.c)] <- centrescale(Bsub.pn[,2:ncol(Bsub.pn)])
+
+boxplot(Bsub.pn[,2:ncol(Bsub.pn)], col = 2, range = 0, las = 2)
+boxplot(Bsub.log[,2:ncol(Bsub.log)], col = 2, range = 0, las = 2)
+boxplot(Bsub.as[,2:ncol(Bsub.as)], col = 3, range = 0, las = 2)
+boxplot(Bsub.r[,2:ncol(Bsub.r)], col = 3, range = 0, las = 2)
+boxplot(Bsub.par[,2:ncol(Bsub.par)], col = 3, range = 0, las = 2)
+boxplot(Bsub.lvl[,2:ncol(Bsub.lvl)], col = 3, range = 0, las = 2)
+boxplot(Bsub.c[,2:ncol(Bsub.c)], col = 3, range = 0, las = 2)
+
+# autoscale file if required
+write.csv(Bsub.as,"Bsub.as.csv", row.names = F)
+
+Bsub.as <- read.csv("Bsub.as.csv", stringsAsFactors = FALSE)
+```
+
+# PCA/IPCA
+```{r}
+
+```
 
 
 
