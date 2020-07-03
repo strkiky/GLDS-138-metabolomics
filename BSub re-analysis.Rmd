@@ -25,6 +25,25 @@ Bdata <- read.csv(BRIC23metab, stringsAsFactors = FALSE)
 # if already downloaded
 Bdata <- read.csv("GLDS-138_metabolomics_mx 367428_NASA_bacteria cells_09-2017_submit.csv", stringsAsFactors = FALSE)
 
+# filter
+Bdata <- t(Bdata)
+Bdata <- Bdata[-c(2:7, 114:118),]
+Bdata <- Bdata[,-c(1:2,6:8)]
+Bdata[1,1:3] <- Bdata[2,1:3]
+Bdata <- Bdata[-c(2),]
+
+# Column and row names
+columnName <- Bdata[1,]
+rowName    <- Bdata[,1]
+colnames(Bdata) <- columnName
+rownames(Bdata) <- rowName
+Bdata <- Bdata[-1,]
+Bdata <- Bdata[,-1]
+Bdata <- as.data.frame(Bdata)
+
+# as.numeric
+Bdata[,3:ncol(Bdata)] <- lapply(Bdata[,3:ncol(Bdata)], function(x) as.numeric(as.character(x)))
+
 ```
 
 
