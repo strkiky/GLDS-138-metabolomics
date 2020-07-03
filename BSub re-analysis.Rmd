@@ -128,6 +128,14 @@ Bsub.as <- read.csv("Bsub.as.csv", stringsAsFactors = FALSE)
 
 # PCA/IPCA
 ```{r}
+library(mixOmics)
+# the general file
+X <- Bsub.as[,2:ncol(Bsub.as)]
+MyResult.ipca$kurtosis # proceed with PCA
+MyResult.pca <- pca(X, ncomp = 3, center = TRUE)
+plotIndiv(MyResult.pca, comp = c(1,2), title = 'B. subtilis PCA',
+          legend = TRUE, group = Bsub.as$comment, legend.title = 'Treatment',
+          ind.names = FALSE)
 
 ```
 
