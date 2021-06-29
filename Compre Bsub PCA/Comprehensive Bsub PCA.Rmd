@@ -84,6 +84,7 @@ write.csv(GLDS138.as,"GLDS138.as.csv", row.names = F)
 ```
 # Comparison setups 
 ```{r}
+# if already made
 GLDS138.as <- read.csv("GLDS138.as.csv", check.names = FALSE, header = TRUE)
 utils::View(GLDS138.as)
 
@@ -111,7 +112,7 @@ library(mixOmics)
 # the general file
 X <- GLDS138.as[,4:ncol(GLDS138.as)]
 MyResult.pca <- pca(X, ncomp = 3, center = TRUE)
-plotIndiv(MyResult.pca, comp = c(1,2), legend = TRUE, title = 'GLDS138: PCA',
+plotIndiv(MyResult.pca, comp = c(1,2), legend = TRUE, title = 'GLDS138 + 145: PCA',
           group = GLDS138.as$Label, legend.title = 'Treatment',
           ellipse = FALSE, style = "ggplot2", ind.names = FALSE, 
           pch = GLDS138.as$species, legend.title.pch = 'Species')
@@ -140,7 +141,7 @@ MyResult.pca #33,11,8
 # Pellet - Flight vs Ground
 X <- BsubFG[,3:ncol(BsubFG)]
 MyResult.pca <- pca(X, ncomp = 4, center = TRUE)
-plotIndiv(MyResult.pca, comp = c(1,2), legend = TRUE, title = 'B. subtilis - Flight vs Ground: PCA',
+plotIndiv(MyResult.pca, comp = c(1,2), legend = TRUE, title = 'B. subtilis Pellet - Flight vs Ground: PCA',
           group = BsubFG$Label, legend.title = 'Treatment',
           ellipse = TRUE, style = "ggplot2", ind.names = FALSE)
 plotIndiv(MyResult.pca, comp = c(1,2,3), legend = TRUE, title = 'B. subtilis - Flight vs Ground: PCA',
@@ -152,7 +153,7 @@ MyResult.pca #18,15,11,11
 # Media - Flight vs Ground
 X <- BsubMd[,3:ncol(BsubMd)]
 MyResult.pca <- pca(X, ncomp = 3, center = TRUE)
-plotIndiv(MyResult.pca, comp = c(1,2), legend = TRUE, title = 'B. subtilis consumed media - Flight vs Ground: PCA',
+plotIndiv(MyResult.pca, comp = c(1,2), legend = TRUE, title = 'B. subtilis extracellular media - Flight vs Ground: PCA',
           group = BsubMd$Label, legend.title = 'Treatment',
           ellipse = TRUE, style = "ggplot2", ind.names = FALSE)
 plotVar(MyResult.pca, cutoff = 0.8)
@@ -249,7 +250,7 @@ plotIndiv(MyResult.ipca, comp = c(1,2), legend = TRUE, title = 'B. subtilis: IPC
           ellipse = TRUE, style = "ggplot2", ind.names = FALSE)
 plotVar(MyResult.ipca, cutoff = 0.8)
 MyResult.ipca$kurtosis 
-hist(MyResult.ipca$loadings$X[,1], main = "Histogram of IPC1's loadings", xlab = "IPC1 Loadings")
+hist(MyResult.ipca$loadings$X[,1], main = "Bacillus subtilis IPC1's loadings histogram ", xlab = "IPC1 Loadings")
 hist(MyResult.ipca$loadings$X[,2], main = "Histogram of IPC2's loadings", xlab = "IPC2 Loadings")
 hist(MyResult.ipca$loadings$X[,3], main = "Histogram of IPC3's loadings", xlab = "IPC3 Loadings")
 
@@ -353,7 +354,8 @@ length(Y)
 # PLS-DA
 MyResult.plsda <- plsda(X,Y)
 plotIndiv(MyResult.plsda, legend = TRUE,
-          ellipse = TRUE, star = TRUE, title = 'Spaceflight B. subtilis: PLS-DA')
+          ellipse = TRUE, ind.names = FALSE,
+          title = 'Spaceflight B. subtilis: PLS-DA')
 plotVar(MyResult.plsda, cutoff = 0.75)
 plotLoadings(MyResult.plsda, comp = 1, title = 'Loadings on comp 1: PLS-DA', 
              contrib = 'max', method = 'mean', ndisplay = 20)
@@ -382,16 +384,16 @@ plotIndiv(MyResult.splsda2, style="3d")
 ##  Tuning parameters and numerical outputs
 # check the best number of components to use 
 MyResult.splsda2 <- plsda(X, Y, ncomp = 5)
-MyPerf.plsda <- perf(MyResult.splsda2, validation = "Mfold", folds = 3,
+MyPerf.plsda <- perf(MyResult.splsda2, validation = "Mfold", folds = 5,
                      progressBar = FALSE, nrepeat = 50)
 plot(MyPerf.plsda, col = color.mixo(5:7), sd = TRUE, legend.position = "horizontal") # looks to be 2 components
 
-list.keepX <- c(5:10,  seq(20, 100, 10))
+list.keepX <- c(1:10,  seq(20, 100, 10))
 list.keepX # output the grid of values tested
 
 tune.splsda.srbct <- tune.splsda(X, Y, ncomp = 3, 
                                  validation = 'Mfold',
-                                 folds = 3, dist = 'max.dist', progressBar = FALSE,
+                                 folds = 5, dist = 'max.dist', progressBar = FALSE,
                                  measure = "BER", test.keepX = list.keepX,
                                  nrepeat = 50)
 error <- tune.splsda.srbct$error.rate
@@ -408,7 +410,7 @@ plot(tune.splsda.srbct, col = color.jet(3))
 # The final graph - we have to use two component 
 MyResult.splsda.final <- splsda(X, Y, ncomp = 2, keepX = select.keepX)
 plotIndiv(MyResult.splsda.final, ind.names = FALSE, legend=TRUE,
-          ellipse = TRUE, title="sPLS-DA - final result")
+          ellipse = TRUE, title="Spaceflight B. subtilis: sPLS-DA - final result")
 
 plotLoadings(MyResult.splsda.final, comp = 1, title = 'Loadings on comp 1', 
              contrib = 'max', method = 'mean')

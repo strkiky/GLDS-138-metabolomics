@@ -130,8 +130,8 @@ plotIndiv(MyResult.ipca, comp = c(1,2,3), legend = TRUE, title = 'S. aureus - Fl
           ellipse = TRUE, style = "3d", ind.names = FALSE)
 plotVar(MyResult.ipca, cutoff = 0.8)
 MyResult.ipca$kurtosis 
-hist(MyResult.ipca$loadings$X[,1], main = "Histogram of IPC1's loadings", xlab = "IPC1 Loadings")
-hist(MyResult.ipca$loadings$X[,2], main = "Histogram of IPC2's loadings", xlab = "IPC2 Loadings")
+hist(MyResult.ipca$loadings$X[,1], main = "S. aureus Pellet IPC1's loadings", xlab = "IPC1 Loadings")
+hist(MyResult.ipca$loadings$X[,2], main = "S. aureus Pellet IPC2's loadings", xlab = "IPC2 Loadings")
 hist(MyResult.ipca$loadings$X[,3], main = "Histogram of IPC3's loadings", xlab = "IPC3 Loadings")
 
 # Media - Flight vs Ground
